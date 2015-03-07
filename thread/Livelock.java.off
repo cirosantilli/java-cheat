@@ -1,0 +1,51 @@
+/**
+* Sample code that very often leads ot a livelock.
+*
+* TODO make work
+*/
+
+public class Livelock {
+
+    static class Person {
+
+        public final int id;
+        public int pos;
+        public Corridor corridor;
+
+        public Person(int id, int pos, Corridor corridor) {
+            this.id = id;
+            this.pos = pos;
+        }
+
+        public void switchPos() {
+            this.pos *= -1;
+        }
+
+        public void tryToPass() {
+            this.pos *= -1;
+        }
+    }
+
+    static class Corridor {
+
+        public Person[] persons;
+
+        public Corridor(Person[] persons) {
+            this.persons = persons;
+        }
+
+        static boolean canPass() {
+            return persons[0].pos*persons[1].pos < 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Person[] persons = { new Person(0, -1), new Person(0, -1) };
+        Corridor corridor = new Corridor(persons);
+        for ( int i = 0; i < 10000; i++ )
+        {
+            while ( ! canPass ) {
+            }
+        }
+    }
+}

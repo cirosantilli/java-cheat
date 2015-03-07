@@ -1,0 +1,48 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+
+	<id>assembly-xml</id>
+	<formats>
+		<format>zip</format>
+		<format>jar</format>
+	</formats>
+	<includeBaseDirectory>true</includeBaseDirectory>
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>/</outputDirectory>
+      <useProjectArtifact>true</useProjectArtifact>
+      <unpack>true</unpack>
+      <scope>runtime</scope>
+    </dependencySet>
+  </dependencySets>
+
+	<!-- TODO attempt to include Javadoc with code. -->
+	<!--<moduleSets>-->
+		<!--<moduleSet>-->
+			<!--<binaries>-->
+				<!--<attachmentClassifier>javadoc</attachmentClassifier>-->
+				<!--<includeDependencies>false</includeDependencies>-->
+				<!--<outputDirectory>apidoc-jars</outputDirectory>-->
+			<!--</binaries>-->
+		<!--</moduleSet>-->
+	<!--</moduleSets>-->
+
+	<!--<repositories>-->
+		<!--<repository>-->
+			<!--<scope>test</scope>-->
+			<!--<includeMetadata>false</includeMetadata>-->
+		<!--</repository>-->
+	<!--</repositories>-->
+
+	<!--<dependencySets>-->
+		<!--<dependencySet>-->
+			<!--<excludes>-->
+				<!--<exclude>*</exclude>-->
+			<!--</excludes>-->
+			<!--<unpack>false</unpack>-->
+			<!--<scope>test</scope>-->
+			<!--<useProjectArtifact>false</useProjectArtifact>-->
+		<!--</dependencySet>-->
+	<!--</dependencySets>-->
+</assembly>

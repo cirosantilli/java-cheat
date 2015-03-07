@@ -1,0 +1,8 @@
+/_build
+*.class
+
+# Maven
+target/
+
+# Eclipse
+.settings/

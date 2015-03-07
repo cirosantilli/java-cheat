@@ -1,0 +1,158 @@
+# ==============================================================================
+#
+#  Java Tutorials: JMX Examples
+#
+# ==============================================================================
+#
+# In order to compile and run the examples, make a copy of this README file, and
+# then simply cut and paste all the commands as needed into a terminal window.
+#
+# This README makes the assumption that you are running under Java SE 6 on Unix,
+# you are familiar with the JMX technology, and with the bourne shell or korn
+# shell syntax.
+#
+# All the commands below are defined using Unix korn shell syntax.
+#
+# If you are not running Unix and korn shell you are expected to be able to
+# adapt these commands to your favorite OS and shell environment.
+#
+
+#-------------------------------------------------------------------------------
+#
+# Compile the Java classes
+#
+# The Java classes used in these examples are contained in
+# the com.example Java package.
+#
+# * Main.java: gets the Platform MBean Server, and creates
+#              and registers the Hello World MBean and the
+#              QueueSampler MXBean on it.
+#
+# * Hello.java: implements the Hello World standard MBean.
+#               This standard MBean exposes for management
+#               two operations, "sayHello" and "add", and
+#               two attributes, "Name" and "CacheSize". This
+#               MBean emits also an AttributeChangeNotification
+#               every time the "CacheSize" attribute is set.
+#
+# * HelloMBean.java: the management interface exposed by
+#                    the Hello World standard MBean.
+#
+# * QueueSampler.java: implements the QueueSampler MXBean.
+#                      This MXBean manages a resource of type Queue<String>.
+#                      The MXBean declares a getter getQueueSample that takes
+#                      a snapshot of the queue when invoked and returns a Java
+#                      class QueueSample that bundles the following values
+#                      together: the time the snapshot was taken, the queue
+#                      size and the head of the queue at that given time.
+#                      The MXBean also declares an operation clearQueue that
+#                      clears all the elements in the queue being managed.
+#
+# * QueueSamplerMXBean.java: the management interface exposed
+#                            by the QueueSampler MXBean.
+#
+# * QueueSample.java: the Java type returned by the getQueueSample()
+#                     method in the QueueSampler MXBean interface.
+#
+# * Client.java: creates an RMI connector (JRMP) that connects to the JMX
+#                out-of-the-box management agent running on port 9999 on
+#                the same host. This JMX client performs operations on
+#                the remote MBean server and on both the Hello MBean and
+#                the QueueSampler MXBean using MBean/MXBean proxies, and
+#                then closes the RMI connector. This class also implements
+#                an inner class called ClientListener that is used to handle
+#                the JMX remote notifications.
+#
+
+$(JDK_HOME)/javac com/example/*.java
+
+#-------------------------------------------------------------------------------
+#
+# Example 1: Monitoring and Management of an Existing
+#            Java Application Using JConsole.
+#
+#  The aim of this example is to show how easy it is to monitor and manage
+#  an existing Java application running on Java SE 6 using the jconsole tool.
+#
+
+# Start the Notepad application (the out-of-the-box management agent for
+# local management will be enabled by JConsole using the Attach API).
+#
+
+$(JDK_HOME)/bin/java -jar $(JDK_HOME)/demo/jfc/Notepad/Notepad.jar
+
+# Start jconsole on a different shell window on the same host and select the
+# Notepad application from the list of local processes, then click on Connect.
+# Navigate through the different tabs to browse the monitoring and management
+# information exposed by the out-of-the-box management agent.
+#
+
+$(JDK_HOME)/bin/jconsole
+
+#-------------------------------------------------------------------------------
+#
+# Example 2: Instrumenting Your Own Java Applications.
+#            Monitoring and Management Using JConsole.
+#
+#  The aim of this example is to show the basic features of the JMX technology
+#  first by instrumenting simple resources and second by performing operations
+#  on them and receiving remote notifications using the jconsole tool.
+#
+#  This example shows the implementation of a standard MBean called "Hello"
+#  and an MXBean called "QueueSampler", how to register them in the platform's
+#  MBean Server and how to perform remote operations on them by connecting to
+#  the RMI connector server using the jconsole tool.
+#
+#  Besides monitoring the application, jconsole will also allow you to observe
+#  the built-in JVM instrumentation as the JVM's MBeans are also registered in
+#  the platform's MBean Server. This examples also shows how the existing
+#  platform's MBean Server can be shared between the JVM and the application
+#  itself to register the application MBeans, thus avoiding the creation of
+#  multiple MBean Server instances on the same JVM.
+#
+
+# Start the Main application (the out-of-the-box management agent for
+# local management will be enabled by JConsole using the Attach API).
+#
+
+$(JDK_HOME)/bin/java com.example.Main
+
+# Start jconsole on a different shell window on the same host and select the
+# Main application from the list of local processes, then click on Connect.
+# Navigate through the different tabs to browse the monitoring and management
+# information exposed by the out-of-the-box management agent.
+#
+
+$(JDK_HOME)/bin/jconsole
+
+#-------------------------------------------------------------------------------
+#
+# Example 3: Instrumenting Your Own Java Applications.
+#            Monitoring and Management Using a programmatic JMX Client.
+#
+#  The aim of this example is to show the basic features of the JMX technology
+#  first by instrumenting simple resources and second by performing operations
+#  on them and receiving remote notifications using a programmatic JMX client.
+#
+#  This example shows the implementation of a standard MBean called "Hello"
+#  and an MXBean called "QueueSampler", how to register them in the platform's
+#  MBean Server and how to perform remote operations on them by connecting to
+#  the RMI connector server using a programmatic JMX client.
+#
+
+# Start the Main application with the out-of-the-box management agent for remote
+# management enabled (authentication and encryption have been disabled to
+# simplify the example but this is discouraged in production environments)
+#
+
+$(JDK_HOME)/bin/java -Dcom.sun.management.jmxremote.port=9999 \
+                     -Dcom.sun.management.jmxremote.authenticate=false \
+                     -Dcom.sun.management.jmxremote.ssl=false \
+                     com.example.Main
+
+# Start the JMX client application on a different shell window on the same host
+#
+
+$(JDK_HOME)/bin/java com.example.Client
+
+# ==============================================================================
