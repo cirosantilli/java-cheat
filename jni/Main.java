@@ -1,15 +1,7 @@
 public class Main {
-    public native String nativeMethod();
-
-    static {
-        System.loadLibrary("foo");
-    }
-
-    public void print () {
-        System.out.println(nativeMethod());
-    }
-
+    public native int intMethod(int i);
     public static void main(String[] args) {
-        (new Main()).print();
+        System.loadLibrary("Main");
+        System.out.println(new Main().intMethod(2));
     }
 }

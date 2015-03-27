@@ -1,8 +1,15 @@
 # JNI
 
-TODO not working.
-
 Java Native Interface.
+
+## Requirements
+
+- Linux
+- Java 7
+- `gcc`
+- `JAVA_HOME` environment variable set
+
+## Introduction
 
 Implement methods in C or C++ and call them from Java, allowing you to write code that:
 
@@ -16,10 +23,3 @@ Touches internals of how Java works. TODO how stable is this? Across minors (Jav
 Popular alternative, that does not require you to write any C code: <https://github.com/twall/jna>
 
 Vs: <http://stackoverflow.com/questions/1556421/use-jni-instead-of-jna-to-call-native-code>
-
-## Requirements
-
-- Linux
-- Java 7
-- `gcc`
-- `JAVA_HOME` environment variable set

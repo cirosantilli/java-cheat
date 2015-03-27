@@ -9,7 +9,6 @@
 * Furthermore, no one can bow and bow back at the same!
 * This is all implied by the synchronized keyword:
 * only one of the synchronized methods of an *OBJECT* can take place at a time.
-*
 */
 
 public class Deadlock {

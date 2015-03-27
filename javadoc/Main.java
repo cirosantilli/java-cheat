@@ -17,7 +17,9 @@ like {@code p} and {@code li} are left unclosed:
 Used to escape the at sign.
 <p>
 {@literal @}param
+
 <h1>#link</h1>
+
 <p>
 Class in current package: {@link Main2}.
 <p>
@@ -41,6 +43,18 @@ Custom link content: {@link Main2 main2}. Shows only {@code main2}.
 JCL: TODO {@link java.lang.String}. But it did check that the class exists: {@code NotAClass} would fail.
 <p>
 The manpage says that the label cannot contain curly braces: {@link java.lang.String {}<b>outside</b>}, you must use the HTML escape.
+<p>
+Link to external Javadoc of JDK or other libraries:
+<a href="http://stackoverflow.com/questions/17580248/javadocs-link-to-external-javadoc">http://stackoverflow.com/questions/17580248/javadocs-link-to-external-javadoc</a>
+<p>
+Link to a resource (non-Java) file: {@link resource} Not possible?
+<a href="http://stackoverflow.com/questions/8712556/reference-resources-in-javadoc">http://stackoverflow.com/questions/8712556/reference-resources-in-javadoc"</a>
+
+<h1>#linkplain</h1>
+
+<p>
+Like link, but don't surround the label in a code block: TODO I don't see any difference!
+{@linkplain @method "The label with linkplain"}, {@linkplain @method "The label with link"}.
 
 <h1>#code</h1>
 
@@ -49,7 +63,7 @@ Escapes everything inside it: good to add literal XML to pages to avoid escaping
 <pre>
 {@code
 <p>
-  Literal HTML.
+Literal HTML.
 </p>
 }
 </pre>
@@ -60,6 +74,16 @@ But it does consider nesting the nesting of what is inside code.
 So unless you have code which contains unbalanced curly braces, it does not matter:
 {@code {}<b>outside</b>}
 {@code {{}}<b>outside</b>}
+
+<h1>#see</h1>
+
+<p>
+Links to other classes or methods.
+<p>
+If it starts with {@code <}, then it is left as is. This makes it easy to add URLs with {@code <a>} elements.
+
+@see Main2
+@see <a href="http://example.com">example.com</a>
 */
 public class Main extends Base {
 
@@ -78,7 +102,6 @@ public class Main extends Base {
      * @return The return value
      * @throws IllegalArgumentException Does not check if it can actually throw.
      *                                  But the name must be resolved.
-     * @see    Main2
      */
     public int method(int i, float f, Main main, final int iFinal) {
         return 0;

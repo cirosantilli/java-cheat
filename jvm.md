@@ -8,17 +8,11 @@
 
 Java runs on a virtual machine.
 
-First, the text `.java` files are transformed into a machine readable format
-called Java Bytecode.
-This format is standardized and portable across systems.
-It is not native assembly code.
-The utility that does this step is called `javac`.
-Java Bytecode is specified [here](http://docs.oracle.com/javase/specs/).
+First, the text `.java` files are transformed into a machine readable format called Java Bytecode.
 
-Besides Java, there are implementation of many other languages that generate
-Java bytecode, including both languages which started with separate implementations
-like Jython for Python and languages which were devised primarily for Java Bytecode compilation
-such as Groovy.
+This format is standardized and portable across systems. It is not native assembly code.
+
+The utility that does this step is called `javac`. Java Bytecode is specified [here](http://docs.oracle.com/javase/specs/).
 
 Having a standardized bytecode has the following advantages:
 
@@ -28,8 +22,7 @@ Having a standardized bytecode has the following advantages:
 
     -   Clojure, a functional Lisp dialect. Started by a single guy on personal funds.
 
-    -   Groovy, programming and scripting language. Dynamically typed, and similar to Python and Ruby.
-        Sponsored by EMC through acquisition of creators. Grails web framework.
+    -   Groovy, programming and scripting language. Dynamically typed, and similar to Python and Ruby. Sponsored by EMC through acquisition of creators. Grails web framework.
 
     -   Scala, an object-oriented and functional programming language. Multi paradigm. By EPFL.
 
@@ -37,35 +30,36 @@ Having a standardized bytecode has the following advantages:
 
     -   Jython. Developed by many people since 1997. Sun hired two of them.
 
--   you can distribute `.class` files to end users on any platform. This saves them from compiling,
-    and allows you to distribute obfuscated code.
+-   you can distribute `.class` files to end users on any platform. This saves them from compiling, and allows you to distribute obfuscated code.
 
 -   it is faster for the JVM to understand than source code since it is more machine readable.
 
-Java Bytecode is run by the Java Virtual Machine (JVM).
-Each system has a different implementation of JVM which takes care of system specifics.
-Moder JVMs can do two things:
+Java Bytecode is run by the Java Virtual Machine (JVM). Each system has a different implementation of JVM which takes care of system specifics. Moder JVMs can do two things:
 
 -   interpret bytecode. No overhead, but runs slower.
 
--   compile bytecode. This is known as just in time (JIT) compilation.
-    Has a compilation overhead, but runs faster.
+-   compile bytecode. This is known as just in time (JIT) compilation. Has a compilation overhead, but runs faster.
 
-Modern JVMs start compiling and interpreting at the same time. When JIT is done
-they switch from interpretation to to the compiled code.
+Modern JVMs start compiling and interpreting at the same time. When JIT is done they switch from interpretation to to the compiled code.
 
-The `.NET` platform is somewhat equivalent to the Java platform as it also supports
-bytecode and several languages. `.NET` bytecode is known as Common Language Runtime (CLR).
+The `.NET` platform is somewhat equivalent to the Java platform as it also supports bytecode and several languages. `.NET` bytecode is known as Common Language Runtime (CLR).
 
-A good way to learn bytecode is to generate it from assemblers:
-programs that take a human readable language that maps 1-to-1 to bytecode instructions.
-The most popular assembler seem to be [Jasmin](jasmin/): we will make the main bytecode cheat there.
+A good way to learn bytecode is to generate it from assemblers: programs that take a human readable language that maps 1-to-1 to bytecode instructions. The most popular assembler seem to be [Jasmin](jasmin/): we will make the main bytecode cheat there.
 
 ## Compile bytecode
 
 <http://programmers.stackexchange.com/questions/132993/is-it-possible-to-compile-java-into-machine-code-not-bytecode>
 
 No simple solution seems to exist.
+
+## Class file format
+
+<http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html>
+
+-   4 byte magic signature: `CA FE BA BE`.
+
+    History behind it:
+    <http://stackoverflow.com/questions/2808646/why-is-the-first-four-bytes-of-java-class-file-format-is-cafebabe>
 
 ## Shebang for Java
 
@@ -97,10 +91,14 @@ Way to share data between VMs.
 
 Interface for debuggers to interact with the VM. All IDEs and JDB use it to implement debugging.
 
+C# has stdlib methods that put you into debug mode like `System.Diagnostics.Debugger.Launch()`, but Java does not seem to have an analogous method: <http://stackoverflow.com/questions/2840941/system-diagnostics-debugger-break-like-using-java>
+
 ## How to crash the JVM
 
-Java does a lot of safety checks for us, and the JVM does not usually get killed by the OS
-like a C program can easily to, typically coredump by reading memory form some other program.
+- <http://stackoverflow.com/questions/6470651/creating-a-memory-leak-with-java>
+- <http://stackoverflow.com/questions/65200/how-do-you-crash-a-jvm>
+
+Java does a lot of safety checks for us, and the JVM does not usually get killed by the OS like a C program can easily to, typically coredump by reading memory form some other program.
 
 The best ways to crash the JVM are then:
 
@@ -131,6 +129,13 @@ Implementation details which are not specified in the language or JVM specificat
 TODO standardized or not?
 
 <http://stackoverflow.com/questions/1262328/how-is-the-java-memory-pool-divided>
+
+In Hotspot It is possible to set which garbage collector should be used:
+
+- `-XX:+UseG1GC`
+- `-XX:+UseParallelGC`
+- `-XX:+UseConcMarkSweepGC`
+- `-XX:+UseSerialGC`
 
 #### NUMA
 

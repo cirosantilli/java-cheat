@@ -1,8 +1,11 @@
-/_build
 *.class
 
 # Maven
 target/
 
 # Eclipse
+.project/
 .settings/
+
+# Vim
+.vimrc

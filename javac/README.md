@@ -1,0 +1,87 @@
+# javac
+
+- [Javac and import](import/)
+
+## Basic usage
+
+Compile `HelloWorld.java` source file into `HelloWorld.class` bytecode:
+
+    javac HelloWorld.java
+
+Then run it with:
+
+    java HelloWorld
+
+## help
+
+    java -help
+
+## source
+
+## target
+
+`-source`: specify the version of the source code input.
+
+Can be the current version, or any major prior version.
+
+Example:
+
+    javac -source 1.6 A.java
+
+`-target`: specify the version of the targeted JVM.
+
+### TODO
+
+### bootclasspath
+
+### rt.jar
+
+I get a warning:
+
+    warning: [options] bootstrap class path not set in conjunction with -source 1.7
+
+How to prevent it?
+
+<http://stackoverflow.com/questions/7816423/warning-options-bootstrap-class-path-not-set-in-conjunction-with-source-1-5>
+
+`JAVA_HOME` does not work there, nor adding `rt.jar` to the `-cp` list. What works is to add `-bootclasspath` pointing to the `rt.jar`
+
+TODO rt.jar vs other library class files? http://www.ibm.com/developerworks/library/j-5things11/ says: Then your custom implementation needs to be available to the bootstrap ClassLoader, which loads java.lang.Object and all his buddies.
+
+## d
+
+Class files output directory.
+
+Example:
+
+    javac -d bin A.java
+
+generates `bin/A.class`.
+
+## g
+
+Add full debug information to the class files.
+
+By default, some debug information is already added, namely the line numbers and corresponding source code we see on exception traces.
+
+But other things are not included, in particular local variable information that allows you to do `locals` on `jdb`.
+
+## HotSpot extensions
+
+All of them are prefixed by `-X`.
+
+### int
+
+### comp
+
+Only compile, or only interpret bytecode without compiling. No JIT.
+
+## X
+
+### lint
+
+Turn on/off compilation warnings.
+
+## Compile without having dependencies
+
+Not possible to determine the correct bytecode: <http://stackoverflow.com/questions/1537714/disabling-compile-time-dependency-checking-when-compiling-java-classes>

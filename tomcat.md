@@ -77,6 +77,15 @@ The most common way to deploy apps is by putting WAR file under:
 
 But you can also put the unpacked WAR file there.
 
+### Disable certain applications from starting up by default
+
+Hard:
+
+- <http://stackoverflow.com/questions/5067062/how-to-disable-specific-apps-from-starting-during-tomcat-startup>
+- <http://serverfault.com/questions/333375/is-it-possible-to-turn-off-auto-start-for-some-but-not-all-app-servers-deploye>
+
+Corrupting the apps by renaming key files like `WEB-INF` is the best plan I've found so far.
+
 ## Logs
 
 Ubuntu 14.04:

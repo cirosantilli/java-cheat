@@ -26,27 +26,74 @@ they cannot be deterministically checked.
 /*
 # import
 
-    In Java, import is just a shorthand: after importing `a.b.C` you can use just C.
+    In Java, import is just a shorthand generator: after importing `a.b.C` you can use just C.
 
     But you can use classes without importing as long as you pass the full path
 
         a.b.C c = new a.b.C();
 
-    # javax vs java
-
-        <http://stackoverflow.com/questions/727844/javax-vs-java-package>
+    Becaues of this, every import argument must have a `.`,
+    otherwise it is an immediate compile error.
 
     TODO search path?
 
-    TODO import static
-
     It is not possible to import a class without package:
-    http://stackoverflow.com/questions/283816/how-to-access-java-classes-in-the-default-package
 
-    It is not possible to import two classes with the same name,
-    or a class with the same name as the current one.
+    # import nested classes
+
+        The outer class names acts like a package.
+
+        To use the shorthand form `Inner`, you need to import as:
+
+            import Outer.Inner;
+
+        even when in the current package.
+
+    # import static
+
+        `import static` imports a static method into the current namespace.
+
+        E.g., after:
+
+            import static Math.max;
+
+        you can then use just:
+
+            max(0, 1);
+
+        instead of:
+
+            Math.max(0, 1);
+
+        It only works for static methods, for which the syntax `max()` makes sense:
+        non-static methods need to know which object they belong to.
+
+# package
+
+    # Domain name convention
+
+        It is a common convention to match package names with domain names to avoid conflicts.
+
+        E.g., if you own `xyz.com`, then you could name your classes as `com/xyz/Class.java` of `com/xyz/app0/Class.java`.
+
+        Perfect bijection is of course impossible, because many domain names cannot be package names.
+
+        What to do in some of those cases:
+        http://docs.oracle.com/javase/tutorial/java/package/namingpkgs.html
+
+        Basically:
+
+        -   replace hyphens with underscores
+
+        -   prefix reserved package names like `int` and `java`
+            and domain names that start with numbers like `123.com` with an underscore
+
+    # Reserved package names
+
+        `java` and `java.lang` are reserved, and raise `SecurityException` at runtime.
+
+        TODO what are all reserved package names?
 */
-
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -56,7 +103,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -86,14 +132,37 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-// There can be only one class per java file
-// and it *must* have the same name as the file.
+/*
+# Top level classes
+
+    There can be only one public top-level class per Java file
+    and it *must* have the same name as the file.
+
+    The only things that can come outside of top-level classes in Java are:
+
+    - package declaration
+    - import statement
+
+    Having multiple top-level classes is highly discouraged and almost never seen in practice:
+    http://stackoverflow.com/questions/2336692/java-multiple-class-declarations-in-one-file
+*/
+
+    // ERROR: cannot be public because does not match the file name.
+    //public class Main2 {}
+
+    // ERROR: Top level classes cannot have neither protected, private or static modifiers.
+    //private class Main2 {}
+
+    // OK.
+    class Main2 {}
+
 public class Main {
 
     // General purpose fields
@@ -213,7 +282,7 @@ public class Main {
         public static class StaticInitializer {
             static HashMap<Integer,Integer> map;
             static {
-                map = new HashMap<Integer,Integer>();
+                map = new HashMap<>();
                 // It would not be possibel to do this without the static initializer.
                 map.put(1, -1);
                 System.out.println("StaticInitializer");
@@ -241,6 +310,22 @@ public class Main {
             }
         }
 
+        static class ExceptionInInitializerErrorTest {
+            static {
+                if (true)
+                    throw null;
+            }
+        }
+
+        static class ExceptionInInitializerErrorFieldTest {
+            static int i = f();
+            static int f() {
+                if (true)
+                    throw null;
+                return 0;
+            }
+        }
+
         // Field hiding
 
             static class FieldHideBase {
@@ -263,14 +348,39 @@ public class Main {
 
         // Generics
 
-            //public static <T> T genericMethod(T i, T j) {
-                //return i.plus(j);
+            public static <T> T genericMethod(T i) {
+                return i;
+            }
+
+            public static <T> String genericGetClass(T i) {
+                return i.getClass().getSimpleName();
+            }
+
+            //public static <T> T genericGetInstance() {
+                //return what?
             //}
+
+            //public static <T> Class<T> genericGetClassDotClass(T t) {
+                //return T.class;
+            //}
+
+            public static <T> String genericMethodGenericArgument(List<T> l) {
+                return l.getClass().getSimpleName();
+            }
+
+            public static class GenericStatic<T> {
+                static int i = 0;
+            }
 
         // Interface
 
             interface EmptyInterface {}
 
+            interface EmptyInterfaceDerived extends EmptyInterface{}
+
+            interface EmptyGenericInterface<T> {}
+
+            interface EmptyGenericInterfaceDerived<T> extends EmptyGenericInterface<T> {}
 
             interface InterfacePrivateMethod {
                 //private void method();
@@ -327,16 +437,20 @@ public class Main {
         }
 
         static int varargMethod(int... is) {
-            // TODO
-            //assert is.getClass() == Array.class;
+            // Vargars passes an array to the string.
+            assert is.getClass() == int[].class;
             return is[0] + is[1];
         }
 
-        static int varargArrayMethod(int[] is) {
-            // TODO
-            //assert is.getClass() == Array.class;
-            return is[0] + is[1];
-        }
+        // Override TODO
+
+            //static class OverrideStatic {
+                //public static int method() { return 0; }
+            //}
+
+            //static class OverrideStaticDerived extends OverrideStatic {
+                //public static String method() { return null; }
+            //}
 
         // Overload
 
@@ -355,6 +469,26 @@ public class Main {
 
         static int identity(int i) {
             return i;
+        }
+
+        static void unreachableAfterReturn() {
+            return;
+            // ERROR
+            //assert true;
+        }
+
+        static int finallyAndReturn() {
+        label:
+            try {
+                return 1;
+            } finally {
+                break label;
+            }
+            return -1;
+        }
+
+        static int notAStatement() {
+            return 0;
         }
 
     // Exceptions
@@ -446,6 +580,11 @@ public class Main {
 
             public static void main(String [])
             public static void main(String...)
+
+        TODO can args be null?
+
+        - http://stackoverflow.com/questions/9605532/args-guaranteed-to-be-non-null
+        - http://stackoverflow.com/questions/3868878/java-check-if-command-line-arguments-are-null
     */
     public static void main(String[] args) throws Throwable {
 
@@ -500,6 +639,12 @@ public class Main {
             {
                 int $ = 0;
                 assert $ == 0;
+            }
+
+            {
+                int i = 0, j = 1;
+                assert i == 0;
+                assert j == 1;
             }
 
             /*
@@ -576,6 +721,9 @@ public class Main {
                 // TODO why different from local variables and final fields
                 // http://stackoverflow.com/questions/268814/uninitialized-variables-and-members-in-java
                 assert publicStaticInt == 0;
+
+                // Branching statments: variables are only considered initialized
+                // if they get set on all possible branches.
             }
 
             /*
@@ -727,16 +875,64 @@ public class Main {
                 }
 
                 /*
-                # Equality for wrappers
+                # Compare wrappers
 
-                    Equality comparison `==` however does not unbox them.
+                # Equality wrappers
 
-                    < and > do.
+                    Equality comparison `==` does *not* unbox them,
+                    but because of the wrapper pool it works for some values.
+
+                    < and > does.
                 */
                 {
                     assert new Integer(1) != new Integer(1);
                     assert (new Integer(1)).equals(new Integer(1));
                     assert new Integer(1) < new Integer(2);
+
+                    /*
+                    # Integer pool
+
+                    # Wrapper pool
+
+                        http://stackoverflow.com/questions/1700081/why-does-128-128-return-false-but-127-127-return-true-in-this-code
+
+                        Boxing resolves to `Integer.valueOf()`,
+                        which like Strings has a pool mechanism.
+
+                        But unlike strings, the pool mechanism is only
+                        for a limited range of integers
+                        between -128 and 127, and for true or false.
+
+                        The JSL itself states that ideally the range would be all integers,
+                        and that this is just an implementation limitation.
+
+                        It is also possible to configure the limit with:
+                        -Djava.lang.Integer.IntegerCache.high
+
+                        Summary: **always use `equals()` to compare wrappers!
+                    */
+                    {
+                        assert Integer.valueOf(127) == Integer.valueOf(127);
+                        assert Integer.valueOf(128) != Integer.valueOf(128);
+
+                        // Same as above.
+                        {
+                            Integer i1 = 127;
+                            Integer i2 = 127;
+                            assert i1 == i2;
+                        }
+                        {
+                            Integer i1 = 128;
+                            Integer i2 = 128;
+                            assert i1 != i2;
+                        }
+
+                        assert Boolean.valueOf(true) == Boolean.valueOf(true);
+                        assert Boolean.valueOf(false) == Boolean.valueOf(false);
+
+                        // New raw objects however are different as usual.
+                        assert new Integer(127) != new Integer(127);
+                    }
                 }
 
                 /*
@@ -747,6 +943,9 @@ public class Main {
                 */
                 {
                     Void v;
+
+                    // The only valid valud that can fit into a Void is null:
+                    v = null;
                 }
 
                 /*
@@ -809,7 +1008,7 @@ public class Main {
                 */
                 {
                     /*
-                    # Winening reference conversion
+                    # Widening reference conversion
 
                         JLS7 5.1.5
 
@@ -839,26 +1038,37 @@ public class Main {
                         class Base {}
                         class Derived extends Base {}
 
+                        // What can be done.
+                        {
+                            Base b = new Derived();
+                            Derived d = (Derived)b;
+                        }
+
+                        /*
+                        # ClassCastException
+                        */
+                        {
+                            boolean fail = false;
+                            try {
+                                Derived d = (Derived) new Base();
+                            } catch (ClassCastException e) {
+                                fail = true;
+                            }
+                            assert fail;
+                        }
+
                         // ERROR: Incompatible types.
                         //{ Derived d = new Base(); }
 
                         // ERROR: Incompatible types.
                         //{ Derived d = (Derived) new String(); }
-
-                        // TODO should work, but is raising ClassCast?
-                        //Derived d = (Derived) new Base();
-
-                        // It works for base types however.
-                        Integer i = 1;
-                        Object o = i;
-                        Integer i2 = (Integer) o;
                     }
                 }
             }
         }
 
         /*
-        # operators
+        # Operators
         */
         {
             /*
@@ -884,6 +1094,102 @@ public class Main {
 
                 Does not exist in Java: <http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.27>
             */
+
+            /*
+            # Unary plus
+
+                What is it good for, since there is no operator orelvoad:
+                http://stackoverflow.com/questions/2624410/what-is-the-purpose-of-javas-unary-plus-operator
+            */
+
+            /*
+            # Compound operators
+            */
+            {
+                /*
+                `a += b` is not exactly the same as `a = a + b`, but rather `a = (typeof a)(a + b)`.
+
+                http://stackoverflow.com/questions/8710619/java-operator
+                */
+                {
+                    int i = 1;
+                    long j = 2;
+
+                    i += j;
+
+                    // ERROR: possible loss of precision.
+                    //i = i + j;
+                }
+            }
+
+            /*
+            # Increment operator
+
+            # ++
+            */
+            {
+                /*
+                Unlike in C the following are defined:
+                all side effects of the evaluated expression happen before the assignment.
+                */
+                {
+                    {
+                        int i = 0;
+                        i = i++;
+                        assert i == 0;
+                    }
+
+                    // Because a = b++ equals
+                    //
+                    //   tmp = b;
+                    //   b = b + 1;
+                    //   a = tmp;
+                    //
+                    // So:
+                    //
+                    //   tmp = i;
+                    //   i = i + 1;
+                    //   i = tmp;
+
+                    {
+                        int i = 0;
+                        i = ++i;
+                        assert i == 1;
+                    }
+                }
+            }
+
+            /*
+            # Bitwise operators
+            */
+            {
+                /*
+                For booleans, the bitwise operators are a bit magic and intuitive,
+                and works just like && or || but without short circuiting.
+
+                http://stackoverflow.com/questions/9264897/reason-for-the-exsistance-of-non-short-circuit-logical-operators
+
+                So it all behaves as if booleans were a single bit.
+                */
+            }
+
+            /*
+            # Widening conversions
+
+                http://vanillajava.blogspot.fr/2015/02/inconsistent-operation-widen-rules-in.html
+
+                They might really surprise you, so watch out.
+            */
+
+            /*
+            # Assignemnt operator
+            */
+            {
+                int i, j;
+                i = j = 1;
+                assert i == 1;
+                assert j == 1;
+            }
         }
 
         /*
@@ -957,7 +1263,7 @@ public class Main {
         */
         {
             /*
-                 # Boxing conversion
+            # Boxing conversion
 
                 JLS7 5.1.7
             */
@@ -1041,7 +1347,7 @@ public class Main {
 
                 Nope. TODO why?
 
-                <http://stackoverflow.com/questions/16132759/is-there-auto-type-infering-in-java>
+                http://stackoverflow.com/questions/16132759/is-there-auto-type-infering-in-java
 
                 But generic methods are able to determine them from arguments.
             */
@@ -1098,6 +1404,7 @@ public class Main {
 
                 // Only works for String objects which are magic starting in Java 7:
                 // http://stackoverflow.com/questions/4354662/possible-to-have-switchjava-lang-object-in-java-updated
+                // Project Coin proposal.
                 {
                     String s = "s0";
                     switch (s) {
@@ -1151,7 +1458,9 @@ public class Main {
                     /*
                     # Closeable
 
-                    # try-with-resources
+                    # try with resources
+
+                        Java 7 Project Coin feature.
 
                         <http://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html>
 
@@ -1180,6 +1489,26 @@ public class Main {
                 }
 
                 /*
+                # catch
+                */
+                {
+                    /*
+                    # catch multiple types of exceptions
+
+                        Java 7 Coin Project.
+
+                        `|` operator... ugly.
+
+                        http://stackoverflow.com/questions/3495926/can-i-catch-multiple-java-exceptions-in-the-same-catch-clause
+                    */
+                    {
+                        try {
+                            throw new IllegalArgumentException();
+                        } catch (NullPointerException | IllegalArgumentException e) {}
+                    }
+                }
+
+                /*
                 # throw
 
                 # Throwable
@@ -1191,6 +1520,8 @@ public class Main {
                     The only stdlib implementing classes are Error and Exception
                 */
                 {
+                    // Special case explicit on JLS: `NullPointerException` is thrown.
+                    try { throw null; } catch (NullPointerException e) {}
                 }
 
                 /*
@@ -1219,10 +1550,10 @@ public class Main {
                         +--Error
                         |
                         +--Exception
-                           |
-                           +--Runtime exception
-                           |
-                           +--Many others
+                        |
+                        +--Runtime exception
+                        |
+                        +--Many others
 
                     Exceptions which require the `throws` clause, are called *checked*.
                     The others are called unchecked.
@@ -1262,6 +1593,14 @@ public class Main {
                         } finally {
                         }
                     }
+
+                    // finally and return: finally executes even after a return in the try.
+                    // But if you do return or break in the finally,
+                    // then the previous return is ignored!
+                    {
+                        // TODO get working
+                        assert finallyAndReturn() == -1;
+                    }
                 }
 
                 /*
@@ -1299,11 +1638,12 @@ public class Main {
                 <http://docs.oracle.com/javase/8/docs/technotes/guides/language/foreach.html>
                 but only "enhanced for statement" on the JLS7 14.14.2
 
-                Works with any class that implements Iterable, which is a magic interface.
+                Works with any class that implements Iterable,
+                which is therefore a magic interface.
             */
             {
-                ArrayList<Integer> a = new ArrayList<Integer>();
-                ArrayList<Integer> a2 = new ArrayList<Integer>();
+                ArrayList<Integer> a = new ArrayList<>();
+                ArrayList<Integer> a2 = new ArrayList<>();
                 a.add(1);
                 a.add(2);
 
@@ -1323,17 +1663,45 @@ public class Main {
 
                 // NullPointerException
                 //for (final int i : (ArrayList<Integer>)null) {}
+
+                /*
+                # Iterator
+
+                # Iterable
+                */
+                {
+                    /*
+                    # Iterate all but last element
+
+                        No "perfect" way: either `hasNext`, etc.
+
+                        http://stackoverflow.com/questions/3105613/best-loop-idiom-for-special-casing-the-last-element 
+                    */
+
+                    /*
+                    # Enumeration
+
+                        http://docs.oracle.com/javase/7/docs/api/java/util/Enumeration.html
+
+                        Deprecated for `Iterator`.
+                    */
+                }
             }
 
             // # break statement
             {
                 /*
-                # labeled break statement
+                # Labeled break statement
 
                     Generates a new statement. The break then jumps to whatever comes after the label.
 
                     Don't use it as it is just a goto in desguise:
                     <http://stackoverflow.com/questions/14960419/is-using-a-labeled-break-a-good-practice-in-java>
+
+                    In C, there there are no labeled gotos, this is considered by many style guies
+                    to be one of the last valid uses of GOTO.
+
+                    Others also consider any forward GOTOs acceptable.
                 */
                 {
                     int sum = 0;
@@ -1348,6 +1716,206 @@ public class Main {
                     // Labeled break jumps to here.
                     assert sum == 22;
                 }
+
+                /*
+                The labeled break statement can be used outside of loops and switch,
+                giving us a forward-only GOTO statement.
+                */
+                {
+                    // Basic example.
+                    {
+                        int i = 0;
+                    label:
+                        {
+                            // if to avoid unreachable statement.
+                            if (true)
+                                break label;
+                            i = 1;
+                        }
+                        assert i == 0;
+                    }
+
+
+                    // Labels also have scope, so you can use them many times.
+                    {
+                        int i = 0;
+                    label:
+                        {
+                            if (true)
+                                break label;
+                            i = 1;
+                        }
+                        assert i == 0;
+                    }
+
+                    // ERROR: can't have unlabelled break statements outside loop or switch:
+                    //break;
+
+                    // ERROR: can't have labelled break statements
+                    // that are not surrounded by the label
+                    {
+                        //break;
+                    }
+
+                    // Labelled continue must point to a label of a loop statement.
+                    // Or else we could have a backwards GOTO.
+                    {
+                    label:
+                        {
+                            // ERROR: not a loop label
+                            //continue label;
+                        }
+                    }
+
+                    /*
+                    And for the lolz, you can use URLs directly in your code.
+
+                    This creates an `http:` label followed by a `//example.com` comment.
+                    */
+                    {
+                        http://example.com
+                        {}
+                    }
+                }
+            }
+        }
+
+        /*
+        # Statements
+        */
+        {
+            /*
+            # Not a statement
+
+                Unlike in C, the following generates a compilation error in Java,
+                while GCC only generates a warning and compiles to nothing.
+
+                http://stackoverflow.com/questions/16599183/java-not-a-statement
+            */
+            {
+                // ERROR
+                //0;
+
+                // OK
+                // Although this does nothing, Java does not deeply inspect the method.
+                // And method calls can have side effects.
+                notAStatement();
+
+                // && and || need an if or assignemnt to work.
+                {
+                    //notAStatement() && notAStatement();
+                    boolean t = true && true;
+                }
+
+                /*
+                # Empty statment
+
+                    The empty statement however is valid, and serves as a good source of bugs.
+
+                    Why is it allowed, considering that Java is picky about not a statment?
+                    http://stackoverflow.com/questions/14112515/semicolon-at-end-of-if-statement
+                */
+                {
+                    ;
+                    ;
+
+                    // WARN An empty if is the prototypical bug case.
+                    // javac only warns us about it.
+                    //if (true);
+                }
+            }
+
+            /*
+            # Unreachable statements
+
+                Statements classified as unreachable *prevent compilation*:
+                http://docs.oracle.com/javase/specs/jls/se7/html/jls-14.html#jls-14.21
+                which determines for each statement what is considered unreachable or not.
+
+                Discussions:
+
+                - http://stackoverflow.com/questions/2280787/unreachable-code-error-or-warning
+                - http://stackoverflow.com/questions/3795585/why-does-java-have-an-unreachable-statement-compiler-error
+            */
+            {
+                // Unreachable.
+                {
+                    // while
+                    {
+                        // ERROR
+                        //while (false) { assert true; }
+                        //while (1 + 1 != 2) { assert true; }
+                        //for (;false;) { assert true; }
+
+                        // ERROR
+                        //while(true) {}
+
+                        // OK. Note how the rules are quite complicated,
+                        // and consider if there is a break inside the infinite while.
+                        while(true) { break; }
+
+                        // OK: infinite loop.
+                        // while(true) { if (false) break; }
+                    }
+
+                    // break and continue
+                label:
+                    {
+                        break label;
+                        // ERROR
+                        //assert true;
+                    }
+
+                    // return
+                    unreachableAfterReturn();
+
+                    // Exception
+                    {
+                        try {
+                            throw new Exception();
+                            // ERROR
+                            //assert true;
+                        } catch(Exception e) {}
+                        // The try catch makes what comes after it reachable as expected.
+                        assert true;
+                    }
+
+                }
+
+                // Reachable.
+                {
+                    /*
+                    Unlike while, `if(false)` works.
+
+                    Quoting JLS:
+
+                    The rationale for this differing treatment is to allow programmers
+                    to define "flag variables" such as:
+
+                        static final boolean DEBUG = false;
+
+                    and then write code such as:
+
+                        if (DEBUG) { x=3; }
+                    */
+                    if (false) {
+                        assert true;
+                    }
+
+                    //System.exit(0);
+                    //assert true;
+                }
+            }
+
+            /*
+            # NOOP statement
+
+                Statement that does nothing, usually a debugger breakpoint target:
+
+                - http://stackoverflow.com/questions/2840941/system-diagnostics-debugger-break-like-using-java
+                - http://stackoverflow.com/questions/10736275/is-there-asm-nop-equivalent-in-java
+            */
+            {
             }
         }
 
@@ -1432,14 +2000,14 @@ public class Main {
             /*
             # Generics
 
-                Incur not runtime cost because of type erasure:
-                compiled bytecode does not contain any special instructions for it.
+                Introduced in Java 5 to allow more compile time checks.
 
-                javac converts it with name mungling and typecasts.
+                Incurs not runtime cost because of type erasure.
 
                 # Templates
 
-                    Superficially similar concept in C++.
+                    Superficially similar concept in C++, but in C++ templates compile exactly to code,
+                    while Java also relies on polymorphism TODO check.
 
                 Both types and methods can be generic. both will be commented here.
 
@@ -1471,10 +2039,71 @@ public class Main {
             */
             {
                 /*
+                # Raw types
+
+                    Generic types but without passing the generic arguments.
+
+                    This is how Java was before 1.5: the syntax is only kept for backwards compatibility.
+
+                    Never use this on new code, as you lose compile time checks.
+
+                    The main reason that generics are useful is that most collections contain a single type of objects.
+                    Generics then add typecasts and typechecks automatically for us.
+                */
+                {
+                    // The pre 1.5 raw types way.
+                    {
+	                    @SuppressWarnings({ "rawtypes" })
+                        ArrayList names = new ArrayList();
+                        @SuppressWarnings({ "unchecked" })
+                        boolean b = names.add("abc");
+                        @SuppressWarnings({ "unchecked" })
+                        boolean b2 = names.add(1);
+
+                        // Object returned by default.
+                        Object name = names.get(0);
+                        // We've done this cast correctly.
+                        name = (String)name;
+                        assert(name.equals("abc"));
+
+                        boolean fail = false;
+                        try {
+                            name = (String) names.get(1);
+                        } catch (ClassCastException e) {
+                            fail = true;
+                        }
+                        assert fail;
+                    }
+
+                    // After generics: see how much better this is than with raw types
+                    // if our container is supposed to contain only a single data type.
+                    {
+                        ArrayList<String> names = new ArrayList<>();
+                        names.add("abc");
+                        // No cast needed on the output!
+                        assert(names.get(0).equals("abc"));
+
+                        // Fail on compile time.
+                        //names.add(1);
+                        //names.add((String)1);
+
+                        boolean fail = false;
+                        try {
+                            // Compiles, but we've asked for trouble with a double cast.
+                            // And now the exception happens before insertion, not after retrival.
+                            names.add((String)(Object)1);
+                        } catch (ClassCastException e) {
+                            fail = true;
+                        }
+                        assert fail;
+                    }
+                }
+
+                /*
                 Primitive types cannot be passed as type arguments.
 
                 What happens in most cases is that primitive wrappers are used instead,
-                and boxing and unboxing conversions produce a nice syntax.
+                and boxing and unboxing conversions produce the eye candy.
                 */
                 {
                     // ERROR: unexpected type.
@@ -1484,47 +2113,139 @@ public class Main {
                 }
 
                 /*
-                Generic method example.
+                # Generic method
                 */
                 {
-                    // TODO
-                    //assert genericMethod(0.1, 0.1) == 0;
-                    //assert genericMethod(0.1, 0.1) == 0.2;
+                    Object o = new Object();
+                    assert Main.<Object>genericMethod(o) == o;
+
+                    // In this case however the type can be inferred from the argument.
+                    assert genericMethod(o) == o;
+
+                    /*
+                    If you want to pass the type parameter explicitly,
+                    you need to add explicitly:
+
+                    - the name of the class for static methods
+                    - `this.<T>method()` for instance methods
+                    */
+                    {
+                        // ERROR
+                        //.<Object>genericMethod(o);
+                        //<Object>genericMethod(o);
+                    }
+                }
+
+                // Impossible stuff wigh generics.
+                {
+                    /*
+                    # Call constructor of generic type
+
+                    # Instantiate generic type
+
+                        Not possible without reflection:
+                        http://stackoverflow.com/questions/75175/create-instance-of-generic-type-in-java
+                    */
+                    {
+                        //Integer i = genericGetInstance();
+                    }
+
+                    /*
+                    # Use .class on generic
+
+                        Not possible because of type erasure.
+
+                        http://stackoverflow.com/questions/18255117/how-do-i-get-the-class-attribute-from-a-generic-type-parameter
+                    */
+                    {
+                        //assert Main.<Object>genericGetClassDotClass() == Object.class;
+                    }
+
+                    // Use generics with static members.
+                    {
+                        // As a consequence, you must access static members without the generic parameters:
+
+                        // ERROR: Not a statement.
+                        //assert GenericStatic<Integer>.i == 0;
+
+                        assert GenericStatic.i == 0;
+                    }
                 }
 
                 /*
-                # raw types
+                # Type inference for generics
 
-                    Bad thing that generates compile time warnings.
+                # <>
 
-                # ClassCastException
+                # Diamond
 
-                    Can be generated if you play around with raw types.
+                    Java 7 Coin Project feature.
+
+                    Java can sometimes infer types, and in that case you can simply write TODO check:
+
+                    - `<>` for the type parameters of constructors
+                    - nothing for method calls
+
+                    The rules of type inference are complex and described at:
+                    http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12
+
+                    There have been considerable changes in Java 8.
                 */
                 {
-                    ArrayList names = new ArrayList();
-                    names.add("abcd");
-                    names.add(1);
-                    String name = (String) names.get(0);
-                    boolean fail = false;
-                    try {
-                        name = (String) names.get(1);
-                    } catch (ClassCastException e) {
-                        fail = true;
+                    // Generic class.
+                    {
+                        // Infer type from argument.
+                        assert genericGetClass(new Object()).equals("Object");
+
+                        // Infer type from return value. TODO
+                        genericMethodGenericArgument(new ArrayList<>());
+
+                        /*
+                        Return value to method call inference did not work in Java 7,
+                        likely because of the complication that methods can be overloaded.
+                        This has changed in Java 8.
+                        http://stackoverflow.com/questions/15435747/java-7-generics-type-inference
+                        */
+
+                        // Does not work with anonymous subclasses.
+                        //http://stackoverflow.com/questions/9773733/double-brace-initialisation-anonymous-inner-class-with-diamond-operator
                     }
-                    assert fail;
                 }
 
                 /*
                 # Type erasure
 
+                    Compiled bytecode does not contain any special instructions for it.
+
+                    Wildcards are simply compiled to the most base possible type:
+                    e.g. `List<? extends Number>#get()` compiles to `(Number)List#get`.
+
                     http://docs.oracle.com/javase/tutorial/java/generics/erasure.html
 
                     TODO
+
+                # Reified generics
+
+                    http://stackoverflow.com/questions/879855/what-are-reified-generics-how-do-they-solve-the-type-erasure-problem-and-why-ca
+
+                    A feature which is not part of the language, but would allow for more flexible generics.
                 */
 
                 /*
-                # Unbound windcard
+                Generics and instanceof
+                */
+                {
+                    ArrayList<String> s = new ArrayList<>();
+
+                    assert s instanceof ArrayList;
+
+                    // ERROR. Makes no sense: generics don't generate actual new types:
+                    // only a bunch of automatic typechecks on `.add()`, .get()`, etc.
+                    //assert s instanceof ArrayList<String>;
+                }
+
+                /*
+                # Unbounded wildcard
 
                 # <?>
 
@@ -1538,6 +2259,19 @@ public class Main {
                     TODO examples.
                 */
                 {
+                }
+
+                /*
+                Generics and typecasts
+                */
+                {
+                    ArrayList<String> s = new ArrayList<>();
+                    ArrayList<Integer> i = new ArrayList<>();
+                    ArrayList<Number> n = new ArrayList<>();
+                    //s = i;
+                    //i = n;
+                    //n = i;
+                    //n = (ArrayList<Number>)i;
                 }
             }
 
@@ -1592,6 +2326,9 @@ public class Main {
                         // Use static field from member method.
                         {
                             assert new StaticField().getI() == 1;
+
+                            // WARN static variable should be qualified by type name
+                            assert (new StaticField()).i == 1;
                         }
                     }
 
@@ -1720,6 +2457,12 @@ public class Main {
                 assert l instanceof Local;
                 assert l instanceof Object;
                 assert l instanceof EmptyInterface;
+
+                // Null is not an instance of anything.
+                assert !(null instanceof Object);
+
+                // ERROR primitives cannot be passed to `instanceof`.
+                //assert !(1 instanceof Object);
             }
 
             /*
@@ -1802,15 +2545,6 @@ public class Main {
                         assert varargMethod(1, 2) == 3;
                         assert varargMethod(new int[]{1, 2}) == 3;
                     }
-
-                    // At some deeper level, `...` and `[]` resolve to each other.
-                    // TODO understand.
-                    // http://stackoverflow.com/a/2926653/895245
-                    {
-                        // ERROR
-                        //assert varargArrayMethod(1, 2) == 3;
-                        assert varargArrayMethod(new int[]{1, 2}) == 3;
-                    }
                 }
 
                 // # Method modifiers
@@ -1840,10 +2574,22 @@ public class Main {
                     /*
                     # final method
 
-                        Cannot be overriden.
+                        Like for classes, means the method cannot be overriden.
 
                         TODO applications?
                     */
+                    {
+                        class Base {
+                            void method() {}
+                            final void finalMethod() {}
+                        }
+
+                        class Derived extends Base {
+                            void method() {}
+                            // ERROR
+                            //void finalMethod() {}
+                        }
+                    }
                 }
 
                 // # Overload
@@ -1851,6 +2597,10 @@ public class Main {
                     // TODO use existing methods
 
                     // TODO create example that overload fails with generics
+
+                    // TODO check out overload derivation rules.
+                    // Show some ambiguous references, e.g. null to objects, int to int / Integer.
+                    // http://stackoverflow.com/questions/14053596/compiler-error-reference-to-call-ambiguous
 
                     /*
                     # Operator overloading
@@ -1863,6 +2613,14 @@ public class Main {
                         which is operator overloading, but you can't define your own.
                     */
                 }
+
+                /*
+                # Argument expression order of evaluation
+
+                    http://stackoverflow.com/questions/2201688/order-of-execution-of-parameters-guarantees-in-java
+
+                    Always left to right. TODO example.
+                */
 
                 /*
                 # Local method
@@ -1890,12 +2648,37 @@ public class Main {
                     This word is not used in the JSL? Only overriding.
 
                 # Method overriding
+
+                # Override methods
                 */
                 {
                     /*
                     # Polymorphic static method
 
                         Not possible. TODO alternatives?
+
+                        TODO why can't overriden method return a different typet
+                    */
+                    {
+                        // OverrideStatic
+
+                        /*
+                        The return type of static methods must be the same on derived classes.
+
+                        TODO why, considering that there is no method override, only hiding?
+                        http://stackoverflow.com/questions/9439379/why-does-java-enforce-return-type-compatibility-for-overridden-static-methods
+                        */
+                    }
+
+                    /*
+
+                    # Add throws to derived method
+
+                        http://stackoverflow.com/questions/5875414/method-overriding-and-exceptions
+
+                        Not possible. You can only throw a class derived from the declaration of the superclass.
+
+                        Otherwise, polymorphism wouldn't work.
                     */
                 }
             }
@@ -1907,6 +2690,9 @@ public class Main {
 
                 Cannot be `abstract`, `static`, `final`, `native`,
                 `strictfp`, or `synchronized`.
+
+                Can however be `private` to prevent object construction,
+                e.g. in static utility classes.
             */
             {
                 /*
@@ -1927,6 +2713,22 @@ public class Main {
                 }
 
                 /*
+                # Method with the same name as the constructor
+
+                    Horrendous, but valid.
+
+                    A constructor is only considered if there is no return value.
+                */
+                {
+                    class Class {
+                        int i;
+                        Class(int i) { this.i = i; }
+                        int Class() { return this.i; }
+                    }
+                    assert new Class(1).Class() == 1;
+                }
+
+                /*
                 # Constructor inheritance
 
                     Does not exist. You have to duplicate code:
@@ -1935,161 +2737,123 @@ public class Main {
                     Likely rationale: otherwise all classes would have an empty constructor
                     derived from `Object`, and it does not make much sense to many classes.
                 */
+            }
 
+            /*
+            # Initializer
+
+                Two types: static and non static.
+            */
+            {
                 /*
-                # Call one constructror from anotherexample.
+                # Instance initializer
+
+                    http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.6
+
+                    Code that gets run before any constructor runs.
+
+                    Can access `this`.
+
+                    TODO: vs constructors?
+                    http://stackoverflow.com/questions/1355810/how-is-an-instance-initializer-different-from-a-constructor
                 */
                 {
-                    /*
-                    `this()` for another of current class, `super()` for a constructor of a base class.
-
-                    Both need to be the first statement in a constructor or you get a compilation error.
-                    Therefore either can only be done once.
-
-                    If the first statement of a constructor is not a call to another constructor,
-                    it is as if the default constructor `Base#Base()` were called.
-                    If it is not defined, an error occurs. The base class does not have the default constructor,
-                    then you are forced to make an explicit `super` call on your constructor to an existing constructor:
-                    a base constructor must always be called. TODO Example.
-                    */
+                    // Basic example
                     {
-                        // TODO finish examples.
-
-                        class Base {
+                        class Class {
                             public int i;
 
-                            public Base() {
+                            // The intance initializer.
+                            {
+                                this.i = 1;
                             }
 
-                            public Base(int i) {
-                            }
-                        }
-
-                        class Class extends Base {
                             public Class() {
-                                this.i = 0;
+                                this.i *= -1;
                             }
 
-                            public Class(int i) {
-                                this.i = 1;
-                            }
-
-                            public Class(int i, int j) {
-                                this.i = 1;
-                                // ERROR: call to this must be the first statement
-                                //this();
-
-                                // ERROR: call to super must be the first statement
+                            public Class(int j) {
+                                this.i *= j;
                             }
                         }
+                        assert new Class().i == -1;
+                        assert new Class(2).i == 2;
                     }
 
                     /*
-                    If a cross constructor call is specified,
-                    then its parameters contain the only expressions that are evaluated before
-                    the called constructor.
+                    Most common occurence is as syntatic sugar to iniailize Collections,
+                    often called "double brace initialization".
+                    */
 
-                    Therefore, those expressions cannot involve instance variables or methods,
-                    or you will get an error.
+                    /*
+                    # Initializer must be able to complete normally
+
+                        If an initializer is sure to throw, that is a compile time error.
                     */
                     {
                         class Class {
-
-                            public int i;
-
-                            public Class() {
-                                // 1+1 is evaluated *before* calling the other constructor.
-                                this(1 + 1);
-
-                                // Everything now is evaluated after.
-                                assert this.i == 2;
+                            {
+                                // ERROR
+                                //throw null;
                             }
-
-                            public Class(int i) {
-                                this.i = i;
-                            }
-
-                            public Class(int i, int j) {
-                                // ERROR: cannot reference instance methoe before supertype constructor.
-                                //this(this.method());
-                            }
-
-                            public int method() { return 0; }
                         }
-
-                        new Class();
                     }
                 }
-            }
-
-            /*
-            # Static block
-
-                The formal name is *static initializer*.
-
-            # Static initializer
-
-                http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.6
-
-                http://stackoverflow.com/questions/2943556/static-block-in-java
-
-                Thing like
-
-                    static {
-                        ...
-                    }
-
-                inside a class.
-
-                See also: instance initializer.
-
-                Basically a constructor for static methods.
-
-                Only gets run when the class is used.
-            */
-            {
-                System.out.println("StaticInitializer before usage");
-                assert StaticInitializer.map.get(1) == -1;
-                System.out.println("StaticInitializer after usage");
-            }
-
-            /*
-            # Instance initializer
-
-                http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.6
-
-                Code that gets run before any constructor runs.
-
-                Can access `this`.
-
-                TODO: vs constructors?
-                http://stackoverflow.com/questions/1355810/how-is-an-instance-initializer-different-from-a-constructor
-            */
-            {
-                class Class {
-                    public int i;
-
-                    // The intance initializer.
-                    {
-                        this.i = 1;
-                    }
-
-                    public Class() {
-                        this.i *= -1;
-                    }
-
-                    public Class(int j) {
-                        this.i *= j;
-                    }
-                }
-                assert new Class().i == -1;
-                assert new Class(2).i == 2;
 
                 /*
-                Most common occurence syntatic sugar to iniailize Collections,
-                often called "double brace initialization".
+                # Static block
+
+                    The formal name is *static initializer*.
+
+                # Static initializer
+
+                    http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.6
+
+                    http://stackoverflow.com/questions/2943556/static-block-in-java
+
+                    Thing like
+
+                        static {
+                            ...
+                        }
+
+                    and:
+
+                        static int i = ...;
+
+                    inside a class.
+
+                    See also: instance initializer.
+
+                    Basically a constructor for static methods.
+
+                    Guaranteed to only gets run when the class is "used" as defined by 
+                    http://docs.oracle.com/javase/specs/jls/se7/html/jls-12.html#jls-12.4.1
+                    http://stackoverflow.com/a/3499322/895245
                 */
+                {
+                    System.out.println("StaticInitializer before usage");
+                    assert StaticInitializer.map.get(1) == -1;
+                    System.out.println("StaticInitializer after usage");
+
+                    /*
+                    # ExceptionInInitializerError
+
+                        If a static initializer throws,
+                        Java automatically catches and rethrows as ExceptionInInitializerError.
+                    */
+                    {
+                        try {
+                            new ExceptionInInitializerErrorTest();
+                        } catch(ExceptionInInitializerError e) {}
+
+                        try {
+                            new ExceptionInInitializerErrorFieldTest();
+                        } catch(ExceptionInInitializerError e) {}
+                    }
+                }
             }
+
 
             /*
             # Destructor
@@ -2134,6 +2898,121 @@ public class Main {
                         Apparently cannot be null:
                         http://stackoverflow.com/questions/3789528/can-this-ever-be-null-in-java
                     */
+
+                    /*
+                    # Call one constructror from another
+
+                    # this()
+                    */
+                    {
+                        /*
+                        `this()` for another of current class, `super()` for a constructor of a base class.
+
+                        Both need to be the first statement in a constructor or you get a compilation error.
+                        Therefore either can only be done once.
+
+                        If the first statement of a constructor is not a call to another constructor,
+                        it is as if the default constructor `Base#Base()` were called.
+                        If it is not defined, an error occurs. The base class does not have the default constructor,
+                        then you are forced to make an explicit `super` call on your constructor to an existing constructor:
+                        a base constructor must always be called. TODO Example.
+                        */
+                        {
+                            // TODO finish examples.
+
+                            class Base {
+                                public int i;
+
+                                public Base() {}
+
+                                public Base(int i) {}
+                            }
+
+                            class Class extends Base {
+                                public Class() {
+                                    this.i = 0;
+                                }
+
+                                public Class(int i) {
+                                    this.i = 1;
+                                }
+
+                                public Class(int i, int j) {
+                                    this.i = 1;
+                                    // ERROR: call to this must be the first statement
+                                    //this();
+
+                                    // ERROR: call to super must be the first statement
+                                }
+                            }
+                        }
+
+                        /*
+                        If a cross constructor call is specified,
+                        then its parameters contain the only expressions that are evaluated before
+                        the called constructor.
+
+                        Therefore, those expressions cannot involve instance variables or methods,
+                        or you will get an error.
+                        */
+                        {
+                            class Class {
+
+                                public int i;
+
+                                public Class() {
+                                    // 1+1 is evaluated *before* calling the other constructor.
+                                    this(1 + 1);
+
+                                    // Everything now is evaluated after.
+                                    assert this.i == 2;
+                                }
+
+                                public Class(int i) {
+                                    this.i = i;
+                                }
+
+                                public Class(int i, int j) {
+                                    // ERROR: cannot reference instance methoe before supertype constructor.
+                                    //this(this.method());
+                                }
+
+                                public int method() { return 0; }
+                            }
+
+                            new Class();
+                        }
+
+                        /*
+                        # Recursive constructor invocation
+
+                            Not possible as it would always lead to an infinite loop.
+                        */
+                        {
+                            {
+                                class Class {
+                                    Class() {
+                                        //this();
+                                    }
+                                }
+                            }
+
+                            // And Java checks for any circular construction as well.
+                            // Not fun.
+                            {
+                                class Class {
+                                    Class() {
+                                        this(1);
+                                    }
+
+                                    Class(int i) {
+                                        // ERROR
+                                        //this();
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 /*
@@ -2144,6 +3023,8 @@ public class Main {
                     Call overriden constructor of superclass:
 
                         super()
+
+                    This is already implicily added if you don't have a super call.
                     */
 
                     /*
@@ -2157,8 +3038,66 @@ public class Main {
                     /*
                     # super.super
 
-                        Not possible: <http://stackoverflow.com/questions/586363/why-is-super-super-method-not-allowed-in-java>
+                        Not possible: http://stackoverflow.com/questions/586363/why-is-super-super-method-not-allowed-in-java
                     */
+
+                    /*
+                    # this() and super() on a single constructor
+
+                        Not possible:
+
+                        - http://stackoverflow.com/questions/10381244/why-cant-this-and-super-both-be-used-together-in-a-constructor
+                        - http://stackoverflow.com/questions/6965561/how-to-call-both-super-and-this-in-case-of-overloaded-constructors
+                    */
+                    {
+                        class Class {
+                            Class() {
+                                super();
+                                //this(1);
+                            }
+
+                            Class(int i) {}
+                        }
+                    }
+                }
+
+                /*
+                # final class modifier
+
+                    Prevents the class from being inherited.
+                */
+                {
+                    // Basic example
+                    {
+                        final class Base {}
+                        // ERROR: Cannot inherit from final
+                        //class Derived extends Base {}
+                    }
+
+                    /*
+                    Applications:
+                    <http://stackoverflow.com/questions/5181578/use-of-final-class-in-java>
+
+                    Prevent API break when adding a new method.
+
+                    If someone had derived your class and you add a new method, it braeks your API,
+                    because that person might have overriden the method.
+                    */
+                    {
+                        class Base {}
+                        class Derived extends Base {
+                            int method() { return 0; }
+                        }
+
+                        // But if it becomes:
+
+                            //class Base {
+                                //String method() { return null; }
+                            //}
+
+                        // Then Derived breaks.
+
+                    }
                 }
             }
 
@@ -2166,9 +3105,34 @@ public class Main {
             # Interface
             */
             {
-                // Cannot have private methods
+                // Cannot have private methods:
+                // they would be useless, except for reflection.
                 {
                     InterfacePrivateMethod i;
+                }
+
+                // The protected and public method modifiers are acceptable but useless:
+                // every method is meant to be overriden and thus at least protected.
+                // TODO example
+
+                // Every field is static and final. Those field modifiers can be added,
+                // but they have no effect, and thus should be avoided.
+                // TODO example
+
+                // Nested interfaces are always static, since interfaces don't contain state.
+                // The static modifier can be used explicitly, but it has no effect.
+                // TODO example
+
+                // Implement interface multiple times.
+                {
+                    // ERROR repeated interface
+                    //{ class Class implements EmptyInterface, EmptyInterface {} }
+
+                    // But this is fine:
+                    { class Class implements EmptyInterface, EmptyInterfaceDerived {} }
+
+                    // ERROR cannot be derived with different arguments
+                    //{ class Class implements EmptyGenericInterface<Integer>, EmptyGenericInterfaceDerived<Double> {} }
                 }
             }
 
@@ -2183,6 +3147,12 @@ public class Main {
 
                 - inner classes
                 - static nested classes
+
+                # Visibility and nested classes
+
+                    Nested classes can see private members of the outer class and vice versa.
+
+                    TODO example.
             */
             {
                 /*
@@ -2197,6 +3167,12 @@ public class Main {
                     - non-static member
 
                     TODO are inner interfaces possible? Not local.
+
+                    Those classes have in common that they can access the `this`
+                    of the object in which they are inserted, unlike static member classes:
+
+                    - local based on the this of the method where it gets defined
+                    - anonymous and non-static member based on the object creation
                 */
                 {
                     /*
@@ -2219,13 +3195,20 @@ public class Main {
                             assert l.i == 1;
                         }
 
-                        // Inner classes cannot have static non-final fields. TODO why
-                        // <http://stackoverflow.com/questions/1953530/why-does-java-prohibit-static-fields-in-inner-classes>
+                        /*
+                        Inner classes cannot have static non-final fields or methods:
+                        http://stackoverflow.com/questions/1953530/why-does-java-prohibit-static-fields-in-inner-classes
+                        TODO rationale.
+                        */
                         {
                             class Local {
-                                // Illegal static declaration.
+                                // ERROR: Illegal static declaration.
                                 //public static int i = 1;
+
                                 public static final int fi = 1;
+
+                                // ERROR
+                                //public static int method(){ return 1; }
                             }
                             assert Local.fi == 1;
                         }
@@ -2245,6 +3228,15 @@ public class Main {
 
                     /*
                     # Anonymous class
+
+                        Very similar semantics to a local class, but without a name. Differences:
+
+                        - cannot have a constructor
+                        - since called on a new, does not need a constructor either,
+                            not even a forwarding constructor if the base
+                            does not define the default constructor
+
+                        Useful when you only need to override something once.
                     */
                     {
                         class Base {
@@ -2310,8 +3302,39 @@ public class Main {
                             assert b.inc(1) == 3;
                         }
 
-                        // Cannot have constructors.
-                        // <http://stackoverflow.com/questions/362424/accessing-constructor-of-an-anonymous-class>
+                        // Cannot have constructors:
+                        // http://stackoverflow.com/questions/362424/accessing-constructor-of-an-anonymous-class
+
+                        /*
+                        # Modify non-final local variable in anonymous class
+
+                            Cannot only access them, not modify them.
+
+                            This is why we say that in Java 7, there were no real closures.
+
+                            Possible in Java 8.
+
+                            http://stackoverflow.com/questions/4732544/why-are-only-final-variables-accessible-in-anonymous-class
+                        */
+                        {
+                            int local = 0;
+                            final int finalLocal = 0;
+                            Base b = new Base() {
+                                int get() {
+                                    // ERROR
+                                    //return local;
+                                    return 0;
+                                }
+
+                                int getLocal() {
+                                    return finalLocal;
+                                }
+
+                                int getOuterMember() {
+                                    return publicStaticInt;
+                                }
+                            };
+                        }
                     }
 
                     /*
@@ -2484,7 +3507,7 @@ public class Main {
             }
 
             /*
-            # Assign operator for objects
+            # Assignment operator for objects
 
                 Assignment for classes makes the old reference point to the new class.
 
@@ -2784,6 +3807,13 @@ public class Main {
                             // Bad: must be used for explicit declaration / initialization.
                             //assert {0, 1}[1] == 1;
                         }
+
+                        // Array with n equal values
+                        {
+                            // Objects: Collections.nCopies().toArray();
+
+                            // Primitives: don't know.
+                        }
                     }
                 }
             }
@@ -2791,19 +3821,17 @@ public class Main {
             /*
             # Arrays look like classes
 
+                But they are not classes. It's just JLS magic.
+
                 http://docs.oracle.com/javase/7/docs/api/java/lang/reflect/Array.html
             */
             {
+                // .class works on them
                 {
                     int[] is = new int[3];
-                    int[] js = new int[3];
 
-                    assert is.getClass() == js.getClass();
-                    assert is.getClass().getSuperclass() == Object.class;
-
-                    // ERROR: incomparable, because one is `Class<Array>`,
-                    // and the other is `Class<XXX>`, because arrays are not generics.
-                    //assert is.getClass() == Array.class;
+                    assert is.getClass() == int[].class;
+                    assert int[].class.getSuperclass() == Object.class;
                 }
 
                 /*
@@ -2812,7 +3840,24 @@ public class Main {
                 This means that arrays behave as if they implement those interfaces,
                 which are therefore magic.
                 */
+
+                /*
+                # Iterate array
+
+                    Arrays don't implement iterable since they are not regular objects,
+                    but the enthanced for loop (`:`) works magically for them as well.
+
+                    http://docs.oracle.com/javase/specs/jls/se7/html/jls-14.html#jls-14.14.2
+                    says that the "Expression must be Iterable or an array type".
+                */
                 {
+                    ArrayList<Integer> a = new ArrayList<>();
+                    ArrayList<Integer> a2 = new ArrayList<>();
+                    a.add(1);
+                    a.add(2);
+                    for (int i : a)
+                        a2.add(i);
+                    assert a.equals(a2);
                 }
             }
 
@@ -2847,21 +3892,6 @@ public class Main {
                         + e.getMessage()
                     );
                 }
-            }
-
-            /*
-            # Iterate array
-
-                Since arrays implement Iterable, you can use the for-each notation.
-            */
-            {
-                ArrayList<Integer> a = new ArrayList<Integer>();
-                ArrayList<Integer> a2 = new ArrayList<Integer>();
-                a.add(1);
-                a.add(2);
-                for (int i : a)
-                    a2.add(i);
-                assert a.equals(a2);
             }
 
             /*
@@ -2937,6 +3967,8 @@ public class Main {
             - bytecode manipulation for class anotations
             - a Java parser for source annotations
 
+            This can be controlled by the `@Retention` built-in meta annotation.
+
             There is no non-reflection language built-in method to view annotation information.
 
             TODO show on example code.
@@ -2949,13 +3981,99 @@ public class Main {
         {
             /*
             # Custom annotations
+
+                Example below.
+
+            # Annotation parameter types
+
+                Annotation parameters correspond to the "methods" of the annotation declaration.
+
+                Only:
+
+                - primitive
+                - String
+                - Class
+                - an Enum
+                - another Annotation
+                - an array of any of the above
+
+                and which are compile time constants. Arbitrary objects are not allowed.
+
+            # default
+
+                Annotation "method" declarations can use the `default` keyword to indicate their default value.
+
+                This has no relation to the Java 8 default interface method qualifier.
+
+            # Annotation fields
+
+                Annotation can have static final fields.
+
+                They can be used as the default value of methods.
+
+                TODO how to access them otherwise?
+
+            # Special annotation parameters
+
+                TODO remove from comments.
+
+                Annotations without parameters don't need the parenthesis:
+
+                    @Annotation
+                    class Class {}
+
+                Annotations with a single parameter, don't need the key:
+
+                    @Annotation(1)
+                    class Class {}
+
+                In that case, if the value is an array, `{}` can be omited:
+
+                    @Annotation(1, 2)
+                    class Class {}
             */
             {
-                @MyAnnotation(i = 1, s = "abc")
-                class Class {}
-                Annotation[] annotations = Class.class.getAnnotations();
-                assert ((MyAnnotation)annotations[0]).i() == 1;
-                assert ((MyAnnotation)annotations[0]).s().equals("abc");
+                /*
+                # getAnnotations
+                */
+                {
+                    @MyAnnotation(i = 1, s = "abc")
+                    class Class {}
+                    Annotation[] annotations = Class.class.getAnnotations();
+                    assert ((MyAnnotation)annotations[0]).i() == 1;
+                    assert ((MyAnnotation)annotations[0]).s().equals("abc");
+                }
+
+                /*
+                # Annotations interface
+
+                    http://docs.oracle.com/javase/7/docs/api/java/lang/annotation/Annotation.html
+                */
+                {
+                    // TODO what is MyAnnotation? A class? An interface?
+                    MyAnnotation a = Class.class.getAnnotation(MyAnnotation.class);
+
+                    // TODO
+                    //assert a instanceof Annotation;
+
+                    Annotation a2 = a;
+                }
+
+                // Arguments without default must be given.
+                {
+                    // ERROR: annotation is missing values
+                    //@MyAnnotation()
+                    class Class {}
+                }
+
+                // Annotations cannot be repeated in Java 7.
+                // Java 8 adds repeatable which allows it.
+                {
+                    // ERROR duplicate annotation
+                    //@MyAnnotation(i = 1, s = "abc")
+                    @MyAnnotation(i = 1, s = "abc")
+                    class Class {}
+                }
             }
 
             /*
@@ -2963,32 +4081,31 @@ public class Main {
 
                 - `Override` - Checks that the method is an override. Causes a compile error if the method is not found in one of the parent classes or implemented interfaces.
                 - `Deprecated` - Marks the method as obsolete. Causes a compile warning if the method is used.
-                - `SuppressWarnings` - Instructs the compiler to suppress the compile time warnings specified in the annotation parameters.
+                - `SuppressWarnings`
                 - `SafeVarargs` - Suppress warnings for all callers of a method or constructor with a generics varargs parameter, since Java 7.
                 - `FunctionalInterface` - Specifies that the type declaration is intended to be a functional interface, since Java 8.
 
                 Meta:
 
                 - `Retention`
-
-                - `Documented` - Marks another annotation for inclusion in the documentation.
-                - `Target` - Marks another annotation to restrict what kind of Java elements the annotation may be applied to.
+                - `Documented` - Marks another annotation for inclusion in the documentation, e.g. Javadoc.
+                - `Target`
                 - `Inherited` - Marks another annotation to be inherited to subclasses of annotated class (by default annotations are not inherited to subclasses).
-                - `Repeatable` - Specifies that the annotation can be applied more than once to the same declaration.
+                - `Repeatable` - Java 1.8 - Specifies that the annotation can be applied more than once to the same declaration.
             */
             {
                 /*
-                # Override
+                # Override annotation
 
                     <http://stackoverflow.com/questions/94361/when-do-you-use-javas-override-annotation-and-why>
 
                     Two benefits:
 
-                    -     compiler checks if you are actually overridding something and aborts if not
+                    -   compiler checks if you are actually overridding something and aborts if not
 
                         Mistakes are specially common when overload is mistakenly used instead of override.
 
-                    -     self documenting code
+                    -   self documenting code
 
                     But no other effects.
                 */
@@ -3008,6 +4125,26 @@ public class Main {
                 }
 
                 /*
+                # SuppressWarnings
+
+                    Instructs the compiler to suppress the compile time warnings specified in the annotation parameters.
+
+                    The exact list is vendor defined, only `unchecked` being mentioned in the JLS.
+
+                    http://stackoverflow.com/questions/1205995/what-is-the-list-of-valid-suppresswarnings-warning-names-in-java
+                */
+                {
+                    // TODO can be used to supress warning on statements without assignment?
+                    {
+	                    @SuppressWarnings({ "rawtypes" })
+                        ArrayList names = new ArrayList();
+                        @SuppressWarnings({ "unchecked" })
+                        // HERE: how to remove the `boolean b`?
+                        boolean b = names.add("abc");
+                    }
+                }
+
+                /*
                 # Retention
 
                 # RetentionPolicy
@@ -3015,7 +4152,7 @@ public class Main {
                     Specifies how the marked annotation is stored. Whether in:
 
                     - the code only
-                    - compiled into the class
+                    - compiled into the class (default)
                     - available at runtime through reflection.
 
                     The values come from http://docs.oracle.com/javase/7/docs/api/java/lang/annotation/RetentionPolicy.html
@@ -3034,6 +4171,16 @@ public class Main {
                 */
                 {
                 }
+
+                /*
+                # Target
+
+                    Limit what kinds of elements the annotation can be applied to.
+
+                    Default: any element type.
+
+                    Takes a list, so can have multiple values.
+                */
             }
         }
 
@@ -3050,6 +4197,24 @@ public class Main {
         */
         {
             /*
+            # CharSequence
+
+                <http://docs.oracle.com/javase/7/docs/api/java/lang/CharSequence.html>
+
+                Major interface implemented by String and other classes.
+
+                Prefer to pass it around instead of strings whenever possible.
+            */
+            {
+                // Does not specify anything about equals,
+                // and major implementors don't either.
+                assert !new StringBuilder("ab").equals("ab");
+
+                // Requires `toString()`. So we can do:
+                assert "ab".equals("ab".toString().toString());
+            }
+
+            /*
             # String
 
                 <http://docs.oracle.com/javase/7/docs/api/java/lang/String.html>
@@ -3065,6 +4230,20 @@ public class Main {
                 */
                 {
                     assert "ab".getClass() == String.class;
+
+                    /*
+                    # Heredoc
+
+                    # Multiline string
+
+                    # String with quotes without escaping
+
+                        Impossible:
+
+                        - http://stackoverflow.com/questions/878573/java-multiline-string
+                        - http://stackoverflow.com/questions/3034186/in-java-is-there-a-way-to-write-a-string-literal-without-having-to-escape-quote
+
+                    */
                 }
 
                 /*
@@ -3128,6 +4307,13 @@ public class Main {
                     assert ("ab" + 1).equals("ab1");
                     assert (1 + "ab").equals("1ab");
 
+                    // +=
+                    {
+                        String s = "ab";
+                        s += "cd";
+                        assert s.equals("abcd");
+                    }
+
                     // Guaranteed to be done at compile time,
                     // and be the same object.
                     assert "ab" + "cd" == "abcd";
@@ -3165,25 +4351,59 @@ public class Main {
 
                     Not by default: <http://stackoverflow.com/questions/1350397/java-equivalent-of-python-repr>
                 */
+
+                /*
+                # split
+
+                    Split string into an array of strings.
+                */
+
+                /*
+                # join
+
+                    Join an array of strings with a given separator.
+
+                    Does not exist in the stdlib of Java 7:
+                    http://stackoverflow.com/questions/1978933/a-quick-and-easy-way-to-join-array-elements-with-a-separator-the-opposite-of-sp
+
+                    But added to Java 8:
+                    http://stackoverflow.com/a/26195047/895245
+
+                    To implement, use StringBuilder, then:
+
+                    - use `sb.setLength(sb.length() - 1)` at the end. Likely the best possibility.
+                    - iterator hasNext check
+                    - use array and stop at i - 1
+                    - modified separator pattern: http://stackoverflow.com/a/3395345/895245
+                */
+
+                /*
+                # startsWith
+
+                # endsWith
+
+                    Boolean checks.
+                */
             }
-
-            /*
-            # CharSequence
-
-                <http://docs.oracle.com/javase/7/docs/api/java/lang/CharSequence.html>
-
-                Interface implemented by String and other classes.
-            */
 
             /*
             # StringBuilder
 
                 http://docs.oracle.com/javase/7/docs/api/java/lang/StringBuffer.html
 
-                Mutable string.
-
-                TODO anything else?
+                Mutable string: implements `CharSequence` which is the main interface of String.
             */
+            {
+                // # toString: convert to String
+
+                // # ensureCapacity: allocate size
+
+                // + does not work: the magic is just for String
+                {
+                    StringBuilder sb = new StringBuilder("ab");
+                    //sb = sb + sb;
+                }
+            }
 
             /*
             # StringBuffer
@@ -3228,11 +4448,6 @@ public class Main {
                 If you are not super concerned about speed, use collections by default.
 
                 <http://stackoverflow.com/questions/6100148/collection-interface-vs-arrays>
-
-            # Short collection initialization
-
-                Nope, add one by one:
-                <http://stackoverflow.com/questions/1005073/initialization-of-an-arraylist-in-one-line>
             */
             {
                 /*
@@ -3250,15 +4465,13 @@ public class Main {
                 /*
                 # Initialize collection
 
+                    <http://stackoverflow.com/questions/1005073/initialization-of-an-arraylist-in-one-line>
+
                     There is no simple one liner to initialize a collection with given values.
 
                     The best way is likely to `add` them one by one.
 
                     A slightly less verbose possibility is the "double brace initialization idiom".
-
-                    If are fine with an immutable collections,
-                    `Collections.singleton()` works if you only want one element,
-                    or `Arrays.asList()` is you want multiple elements.
                 */
                 {
                     /*
@@ -3278,23 +4491,37 @@ public class Main {
                         Even C++ is more convenient on this point, with its initializer lists.
                     */
                     {
-                        ArrayList<Integer> l = new ArrayList<Integer>(){
+                        ArrayList<Integer> l = new ArrayList<Integer>() {
                             private static final long serialVersionUID = 1L;
                             {
                                 add(0);
                                 add(1);
                             }
                         };
-                        ArrayList<Integer> l2 = new ArrayList<Integer>();
+                        ArrayList<Integer> l2 = new ArrayList<>();
                         l2.add(0);
                         l2.add(1);
                         assert l.equals(l2);
+
+                        /*
+                        If are fine with an immutable collections, see
+                        `Collections` `singletonXXX()`, `emptyXXX` families and `nCopies.
+                        */
+
+                        /*
+                        `Arrays.asList()` is a possibility
+                        is you want multiple different elements and but are fine with fixed size.
+                        */
                     }
                 }
 
-                // # toArray
+                /*
+                # toArray
+
+                    Creates a new array.
+                */
                 {
-                    Collection<Integer> l = new ArrayList<Integer>();
+                    Collection<Integer> l = new ArrayList<>();
                     l.add(0);
                     l.add(1);
                     l.add(2);
@@ -3334,13 +4561,13 @@ public class Main {
                         and are in the same order.
                     */
                     {
-                        List<Integer> l = new LinkedList<Integer>();
+                        List<Integer> l = new LinkedList<>();
                         l.add(1);
                         l.add(2);
-                        List<Integer> l2 = new LinkedList<Integer>();
+                        List<Integer> l2 = new LinkedList<>();
                         l2.add(1);
                         l2.add(2);
-                        List<Integer> l3 = new LinkedList<Integer>();
+                        List<Integer> l3 = new LinkedList<>();
                         l3.add(2);
                         l3.add(1);
                         assert  l.equals(l2);
@@ -3358,7 +4585,7 @@ public class Main {
                         <http://stackoverflow.com/questions/4962361/where-is-javas-array-indexof>
                     */
                     {
-                        List<Integer> l = new ArrayList<Integer>();
+                        List<Integer> l = new ArrayList<>();
                         l.add(0);
                         l.add(1);
                         l.add(0);
@@ -3380,7 +4607,7 @@ public class Main {
                         <api/java/util/LinkedList.html>
                     */
                     {
-                        List<Integer> l = new LinkedList<Integer>();
+                        List<Integer> l = new LinkedList<>();
                         l.add(1);
                         l.add(2);
                         assert l.size() == 2;
@@ -3400,7 +4627,7 @@ public class Main {
                         Similar to ArrayList but synchronized.
                     */
                     {
-                        ArrayList<Integer> l = new ArrayList<Integer>();
+                        ArrayList<Integer> l = new ArrayList<>();
                         l.add(1);
                         l.add(3);
                         assert l.size() == 2;
@@ -3418,7 +4645,7 @@ public class Main {
                         TODO vs ArrayList?
                     */
                     {
-                        Stack<Integer> s = new Stack<Integer>();
+                        Stack<Integer> s = new Stack<>();
                         s.add(1);
                         s.add(2);
                     }
@@ -3446,11 +4673,11 @@ public class Main {
                     The Javadoc says it's a mergesort similar to Python's.
                 */
                 {
-                    List<Integer> l = new ArrayList<Integer>();
+                    List<Integer> l = new ArrayList<>();
                     l.add(2);
                     l.add(0);
                     l.add(1);
-                    List<Integer> l2 = new ArrayList<Integer>();
+                    List<Integer> l2 = new ArrayList<>();
                     l2.add(0);
                     l2.add(1);
                     l2.add(2);
@@ -3482,7 +4709,7 @@ public class Main {
                         <http://stackoverflow.com/questions/5611324/whats-the-difference-between-collections-unmodifiableset-and-immutableset-of>
                 */
                 {
-                    Collection<Integer> c = new ArrayList<Integer>();
+                    Collection<Integer> c = new ArrayList<>();
                     Collection<Integer> c2 = Collections.unmodifiableCollection(c);
                     boolean fail = false;
                     try {
@@ -3494,25 +4721,40 @@ public class Main {
                 }
 
                 /*
+                # emptySet
+
+                # emptyList
+
+                # emptyMap
+
                 # singleton
 
                 # singletonList
 
                 # singletonMap
 
-                    Create immutable collections that contain a single element.
+                    Create immutable collections that contain one or 0 elements.
 
                     TODO what is the main application? Just reducing the abilities of the method that gets called?
                     <http://stackoverflow.com/questions/4801794/use-of-javas-collections-singletonlist>
+
+
+                # nCopies
+
+                    ImmutablelList with n copies of a given reference.
+
+                    All elements are a single reference.
+
+                    Only works for objects.
                 */
                 {
                 }
             }
 
             /*
-            # Arrays
+            # Arrays class
 
-                Convenience utilities for Arrays.
+                Convenience static utilities for Arrays.
 
                 <http://docs.oracle.com/javase/7/docs/api/java/util/Arrays.html>
             */
@@ -3521,6 +4763,18 @@ public class Main {
                 # Array equals
 
                     The `Array.equals` inherited from `Object` compares addresses and is the same as `==`.
+
+                # memcmp
+
+                    http://stackoverflow.com/questions/1090102/equivalent-of-memcmp-in-java
+
+                    There is no direct way of doing subrange compare,
+                    likely the best is `Arrays.copyOfRange` + `Arrays.equals` if you need subranges.
+
+                    But that likely won't generate efficient machine code like GCC does for memcmp.
+
+                    This is in some constrast to `memcpy`, for which Java has `System.arraycopy`,
+                    which might conveivably be more efficient.
                 */
                 {
                     int[] is = {0, 1, 2};
@@ -3528,15 +4782,18 @@ public class Main {
                     assert is.equals(is);
                     assert !is.equals(js);
                     assert is != js;
-                    assert Arrays.equals(is,js);
+                    assert Arrays.equals(is, js);
                 }
 
                 /*
-                # sort Arrays inplace
+                # sort array inplace
 
                     Javadoc says it's a Dual-Pivot Quicksort.
 
-                    Java 8 add *parallel*... beautiful.
+                    Java 8 adds a *parallel* version as well... beautiful.
+
+                    In early 2015, a bug was found on it:
+                    http://envisage-project.eu/proving-android-java-and-python-sorting-algorithm-is-broken-and-how-to-fix-it/
                 */
                 {
                     int[] is = {2, 0, 1};
@@ -3544,7 +4801,56 @@ public class Main {
                     // Returns void
                     Arrays.sort(is);
                     assert Arrays.equals(is, js);
+
+                    /*
+                    # Permutation array for a sort
+
+                        http://stackoverflow.com/questions/11997326/how-to-find-the-permutation-of-a-sort-in-java
+
+                        Useful when you have multiple input arrays,
+                        typicially as the input of a numerical problem,
+                        and you need to sort all of them based on a calculated array, e.g., input:
+
+                        - int[] cost
+                        - int[] benefit
+
+                        In your heuristic, you calculate:
+
+                        - int[] ratioCostBenefit
+
+                        and now you want to sort by the ratio,
+                        but you don't want to put them all into a new object since that would pollute the original data.
+
+                        Permutations can also be done with matrices,
+                        and that is the more convenient mathematical model,
+                        but arrays are more efficient of course.
+
+                        TODO give example, move to algorithms.
+                    */
                 }
+
+                /*
+                # Maximum value in array of primitives
+
+                    No good way:
+                    http://stackoverflow.com/questions/1484347/finding-the-max-min-value-in-an-array-of-primitives-using-java
+
+                    If non-primitives, just use `Collections.min(Arrays.asList())`.
+                */
+
+                /*
+                # Array of wrappers to array of primitives
+
+                    http://stackoverflow.com/questions/564392/converting-an-array-of-objects-to-an-array-of-their-primitive-types
+
+                    No good way without loop.
+
+                # Array of primitives to array of wrappers
+
+                    http://stackoverflow.com/questions/3770289/converting-array-of-primitives-to-array-of-containers-in-java
+
+                    No good way without loop.
+                */
 
                 /*
                 # asList
@@ -3555,7 +4861,7 @@ public class Main {
                 */
                 {
                     List<Integer> l = Arrays.asList(0, 1, 2);
-                    List<Integer> m = new ArrayList<Integer>();
+                    List<Integer> m = new ArrayList<>();
                     m.add(0);
                     m.add(1);
                     m.add(2);
@@ -3601,6 +4907,21 @@ public class Main {
                 }
 
                 /*
+                # copyOfRange
+
+                # slice array
+
+                    http://stackoverflow.com/questions/4439595/how-to-create-a-sub-array-from-another-array-in-java
+
+                    Without reallocating:
+                    http://stackoverflow.com/questions/1100371/grab-a-segment-of-an-array-in-java-without-creating-a-new-array-on-heap
+                */
+                {
+                    // No reallocation. TODO random access guaranteed?
+                    //Arrays.asList(array).subList(x, y).
+                }
+
+                /*
                 # toString
 
                     Get a String representation of an array.
@@ -3616,6 +4937,14 @@ public class Main {
                 {
                     assert Arrays.toString(new int[]{0, 1}).equals("[0, 1]");
                 }
+
+                /*
+                # indexOf for arrays
+
+                    http://stackoverflow.com/questions/4962361/where-is-javas-array-indexof
+
+                    Nope, first `Arrays.toList`.
+                */
             }
 
             /*
@@ -3635,9 +4964,14 @@ public class Main {
 
                 Javadoc says it's a red-black tree.
 
+                You can use a custom comparator to compare the entries without wrapping the key.
+
             # HashMap
 
                 Implements `Map`.
+
+                You cannot use a custom hash function without wrapping the key:
+                http://stackoverflow.com/questions/5453226/java-need-a-hash-map-where-one-supplies-a-function-todo-the-hashing
 
             # HashTable
 
@@ -3650,11 +4984,27 @@ public class Main {
                 TODO why is it faster?
             */
             {
-                Map<Integer,String> m = new TreeMap<Integer,String>();
-                m.put(0, "zero");
-                m.put(1, "one");
-                assert m.get(0) == "zero";
-                assert m.get(1) == "one";
+                // Basic usage.
+                {
+                    Map<Integer,String> m = new TreeMap<>();
+                    m.put(0, "zero");
+                    m.put(1, "one");
+                    assert m.get(0) == "zero";
+                    assert m.get(1) == "one";
+                }
+
+                /*
+                # put
+
+                    . Returns the previous value for the key, null if none.
+                */
+                {
+                    Map<Integer,Integer> m = new TreeMap<>();
+                    assert(m.put(0, 0) == null);
+                    assert(m.put(0, 1).equals(0));
+                    assert(m.put(0, 2).equals(1));
+                    //assert(m.put(1, 1).equals(1));
+                }
 
                 /*
                 # entrySet
@@ -3669,8 +5019,21 @@ public class Main {
                     //for (Map.Entry<String, String> entry : map.entrySet()) {
                         //System.out.println(entry.getKey() + "/" + entry.getValue());
                     //}
-
                 }
+
+                /*
+                # values
+
+                    Collection of the values. Not a copy.
+
+                    Not a set because there can be duplicates.
+                */
+
+                /*
+                # keySet
+
+                    Set of all the keys.
+                */
             }
 
             /*
@@ -3738,6 +5101,30 @@ public class Main {
                 }
 
                 /*
+                # arraycopy
+
+                # memcpy
+
+                # memmove
+
+                    Faster array copy? Apparently same as `Arrays.copyOf`
+                    which uses it internally, and is the neater interface.
+
+                    <http://stackoverflow.com/questions/18638743/is-it-better-to-use-system-arraycopy-than-a-fast-for-loop-for-copying-array>
+
+                    Array copy does take more arguments however,
+                    and allows to copy into any position of the target array.
+
+                    It can deal with overlaps on a single array operation,
+                    making it the closes analogue to both `memcpy` and `memmove`.
+                */
+                {
+                    int[] is = {0, 1, 2, 3, 4, 5};
+                    System.arraycopy(is, 1, is, 2, 3);
+                    assert Arrays.equals(is, new int[] {0, 1, 1, 2, 3, 5});
+                }
+
+                /*
                 # Properties
 
                     Parameters that configure the JVM.
@@ -3772,6 +5159,7 @@ public class Main {
                         System.out.println("System.getProperty");
                         System.out.println("  file.separator = " + System.getProperty("file.separator"));
                         System.out.println("  java.io.tmpdir = " + System.getProperty("java.io.tmpdir"));
+                        System.out.println("  java.library.path = " + System.getProperty("java.library.path"));
                         // #version
                         System.out.println("  java.version = " + System.getProperty("java.version"));
                         System.out.println("  os.arch = " + System.getProperty("os.arch"));
@@ -3781,12 +5169,18 @@ public class Main {
                     /*
                     # Version of JVM
 
-                        <http://stackoverflow.com/questions/2591083/getting-version-of-java-in-runtime>
+                        http://stackoverflow.com/questions/2591083/getting-version-of-java-in-runtime
 
                         `java.version` property seems to be the way to go.
 
-                        But you can't do conditional importing with it since Java has no conditional importing:
-                        <http://stackoverflow.com/questions/11288083/javaconditional-imports>
+                    # Conditional compilation
+
+                    # IFDEF
+
+                        You can't do conditional compilation at all in Java,
+                        including based on the version:
+
+                        - http://stackoverflow.com/questions/11288083/javaconditional-imports
                     */
 
                     /*
@@ -3810,6 +5204,12 @@ public class Main {
                 }
 
                 /*
+                # nanoTime
+
+                # currentTimeMIllis
+                */
+
+                /*
                 # gc
 
                     Suggest garbage collection to the VM, increasing the probability that it will get run.
@@ -3828,30 +5228,6 @@ public class Main {
                 # console
                 */
                 {
-                }
-
-                /*
-                # arraycopy
-
-                # memcpy
-
-                # memmove
-
-                    Faster array copy? Apparently same as `Arrays.copyOf`
-                    which uses it internally, and is the neater interface.
-
-                    <http://stackoverflow.com/questions/18638743/is-it-better-to-use-system-arraycopy-than-a-fast-for-loop-for-copying-array>
-
-                    Array copy does take more arguments however,
-                    and allows to copy into any position of the target array.
-
-                    It can deal with overlaps on a single array operation,
-                    making it the closes analogue to both `memcpy` and `memmove`.
-                */
-                {
-                    int[] is = {0, 1, 2, 3, 4, 5};
-                    System.arraycopy(is, 1, is, 2, 3);
-                    assert Arrays.equals(is, new int[] {0, 1, 1, 2, 3, 5});
                 }
             }
 
@@ -3917,11 +5293,21 @@ public class Main {
 
                 http://docs.oracle.com/javase/7/docs/api/java/util/Random.html
 
-                # Generate a positive integer
-            */
+                Generate a positive integer TODO
 
-            // TODO initialize a `BigInteger` with a value larger than a long?
-            // Necessary to do power operations?
+                For multi-threaded operations, prefer `ThreadLocalRandom`.
+            */
+            {
+                /*
+                # SecureRandom
+
+                    On Linux, uses the Kernel random number generator for the seed.
+
+                    TODO is the algorithm itself also different?
+
+                    http://security.stackexchange.com/questions/40633/java-securerandom-doesnt-block-how
+                */
+            }
 
             /*
             # math package
@@ -3941,6 +5327,9 @@ public class Main {
                 {
                     BigInteger i = BigInteger.TEN;
                     assert i.equals(BigInteger.valueOf(10));
+
+                    // TODO initialize a `BigInteger` with a value larger than a long?
+                    // Necessary to do power operations?
                 }
             }
 
@@ -4038,7 +5427,8 @@ public class Main {
 
                 -   Writer
 
-                    -   PrintWriter
+                    -   PrintWritter
+                    -   StringWritter
 
                 -   Reader
 
@@ -4312,7 +5702,7 @@ public class Main {
                 }
 
                 /*
-                # Writer
+                # Writter
 
                     Similar to `OutputStream`, but focuses on streams of characters instead of bytes. 
 
@@ -4349,6 +5739,16 @@ public class Main {
                         new byte[]{'a', 'b'}
                     );
                     f.delete();
+                }
+
+                /*
+                # StringWritter
+
+                    http://docs.oracle.com/javase/7/docs/api/java/io/StringWriter.html
+
+                    String backed writter.
+                */
+                {
                 }
 
                 /*
@@ -4547,6 +5947,12 @@ public class Main {
                 }
             }
         }
+
+        /*
+        # javax vs java
+
+            http://stackoverflow.com/questions/727844/javax-vs-java-package
+        */
 
         /*
         # Off-heap memory

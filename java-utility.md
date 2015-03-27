@@ -4,7 +4,7 @@ This article is about the `java` command line utility.
 
 Front-end for the JVM.
 
-Run a `.class` file with a `main` `public static` method:
+Run a `.class` file with a `public static void main` method:
 
     javac Main.java
     java Main
@@ -47,11 +47,37 @@ Useful options:
 
     `-server` spends more time to optimize JIT as is often desired for server code.
 
+## verbose
+
+Print runtime information to stdout:
+
+    java -verbose -verbose:gc -verbose:jni Main
+
+## X
+
 `-X` non-standard options (TODO what does that mean exactly? Oracle only?):
 
-- `-X`: list extended options
-- `-Xms256M`: initial memory allocation pool
-- `-Xmx256M`: maximum memory allocation pool
+-   `-X`: list extended options
+
+-   `-Xms256M`: initial heap size
+
+-   `-Xmx256M`: maximum heap size
+
+-   `-XX:MaxPermSize=256M`
+
+    Maximum PermGen size. Deprecated in JDK 8 in favor of `-XX:MaxMetaspaceSize`.
+
+-   `-XX:PermSize=size`
+
+    If exceeded, trigger garbage collection. Deprecated in JDK 8, in favor of `-XX:MetaspaceSize`.
+
+-   `-XX:+UseCompressedOops`
+
+    <https://wikis.oracle.com/display/HotSpotInternals/CompressedOops>
+
+    Use object addresses that are 32 bits long even in a 64 bit architecture.
+
+    TODO
 
 ## JAVA_TOOL_OPTIONS
 
