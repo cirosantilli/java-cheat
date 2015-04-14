@@ -120,7 +120,10 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -131,6 +134,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.Stack;
@@ -388,6 +393,8 @@ public class Main {
 
     // Annotation
 
+        @interface EmptyAnnotation {}
+
         @Retention(RetentionPolicy.RUNTIME)
         @Target(ElementType.TYPE)
         @interface MyAnnotation {
@@ -397,13 +404,43 @@ public class Main {
 
     // Enum
 
-        public enum E {
+        public enum SimpleEnum {
             A,
             B,
             C
         }
 
+        //public enum EnumPublicConstructor {
+            //;
+            //public EnumPublicConstructor() {}
+        //}
+
+        public enum EnumPrivateConstructor {
+            // TODO why is this required, but not for an enum with default constructor?
+            ;
+            private EnumPrivateConstructor() {}
+        }
+
+        public enum EnumImplicitPrivateConstructor {
+            // Constructor is implicitly private.
+            EnumImplicitPrivateConstructor() {}
+        }
+
+        public enum EnumConstructor {
+            A(0),
+            B(1),
+            C()
+            // THIS semicolon is required.
+            ;
+            private int i;
+            EnumConstructor() { this.i = -1; }
+            EnumConstructor(int i) { this.i = i; }
+            public int getI() { return this.i; }
+        }
+
     // Method
+
+        static void returnVoidImplicit() {}
 
         static class IntWrapper {
             private int i;
@@ -635,6 +672,9 @@ public class Main {
 
                 It is not clear to me if the API description there is precise or not,
                 it just mentions generic character sets like "combining mark" and non-spacing mark.
+
+                Actual JVM restrictions are much less strict: any byte sequence that does not contain
+                `; [ / < > :` is valid: http://stackoverflow.com/questions/26791204/why-does-the-jvm-allow-us-to-name-a-function-starting-with-a-digit-in-bytecode
             */
             {
                 int $ = 0;
@@ -673,6 +713,12 @@ public class Main {
             - double 64 bit
             - boolean
             - char: Unicode
+
+            All the types have bytecode instructions that differentiate between them,
+            except for boolean.
+
+            `boolean` only matters to disambiguate method signatures,
+            where it has the identifier `Z`.
 
             Types are also classified as:
 
@@ -909,7 +955,7 @@ public class Main {
                         It is also possible to configure the limit with:
                         -Djava.lang.Integer.IntegerCache.high
 
-                        Summary: **always use `equals()` to compare wrappers!
+                        Summary: **always** use `equals()` to compare wrappers!
                     */
                     {
                         assert Integer.valueOf(127) == Integer.valueOf(127);
@@ -960,7 +1006,7 @@ public class Main {
                 }
 
                 /*
-                # Integer
+                # Integer wrapper
 
                     Wrapper for `int`.
                 */
@@ -1363,9 +1409,16 @@ public class Main {
             /*
             # goto
 
-                Nope: http://stackoverflow.com/questions/2545103/is-there-a-goto-statement-in-java
+                Nope:
+
+                - http://stackoverflow.com/questions/2545103/is-there-a-goto-statement-in-java
+                - http://stackoverflow.com/questions/2430782/alternative-to-a-goto-statement-in-java
 
                 Harmful C / C++ features were not included.
+
+                But the labeled break and continue can be used to emulate it pretty well.
+
+                bytecode does have GOTO instruction.
             */
 
             /*
@@ -1430,17 +1483,21 @@ public class Main {
 
                     You must `case A`, and not `case E.A`!
 
-                    Very practical!
+                    Very practical and magic.
                 */
                 {
-                    E e = E.A;
+                    SimpleEnum e = SimpleEnum.A;
                     switch (e) {
                         case A:
-                            assert e == E.A;
+                            assert e == SimpleEnum.A;
                         break;
                         case B:
-                            assert e == E.B;
+                            assert e == SimpleEnum.B;
                         break;
+                        // ERROR
+                        //case SimpleEnum.C:
+                            //assert e == SimpleEnum.B;
+                        //break;
                     }
                 }
             }
@@ -1688,7 +1745,11 @@ public class Main {
                 }
             }
 
-            // # break statement
+            /*
+            # break statement
+
+            # continue statement
+            */
             {
                 /*
                 # Labeled break statement
@@ -1698,10 +1759,11 @@ public class Main {
                     Don't use it as it is just a goto in desguise:
                     <http://stackoverflow.com/questions/14960419/is-using-a-labeled-break-a-good-practice-in-java>
 
-                    In C, there there are no labeled gotos, this is considered by many style guies
+                    In C, there there are no labeled gotos, this is considered by many style guides
                     to be one of the last valid uses of GOTO.
 
-                    Others also consider any forward GOTOs acceptable.
+                    Others also consider any forward GOTOs acceptable: `break` can emulate it.
+                    A labeled continue can be used to emulate a backwards GOTO jump.
                 */
                 {
                     int sum = 0;
@@ -1724,28 +1786,22 @@ public class Main {
                 {
                     // Basic example.
                     {
-                        int i = 0;
-                    label:
-                        {
+                        label: {
                             // if to avoid unreachable statement.
                             if (true)
                                 break label;
-                            i = 1;
+                            assert false;
                         }
-                        assert i == 0;
                     }
 
 
                     // Labels also have scope, so you can use them many times.
                     {
-                        int i = 0;
-                    label:
-                        {
+                        label: {
                             if (true)
                                 break label;
-                            i = 1;
+                            assert false;
                         }
-                        assert i == 0;
                     }
 
                     // ERROR: can't have unlabelled break statements outside loop or switch:
@@ -1757,13 +1813,27 @@ public class Main {
                         //break;
                     }
 
-                    // Labelled continue must point to a label of a loop statement.
-                    // Or else we could have a backwards GOTO.
+                    /*
+                    # Labeled continue
+
+                        Labelled continue must point to a label of a loop statement.
+                    */
                     {
-                    label:
-                        {
+                        label: {
                             // ERROR: not a loop label
                             //continue label;
+                        }
+
+                        // But we can still emulate a backwards GOTO with a dummy while(true)
+                        {
+                            int i = 0;
+                            label: do {
+                                i++;
+                                if (i == 2)
+                                    break label;
+                                continue label;
+                            } while(true);
+                            assert i == 2;
                         }
                     }
 
@@ -1919,6 +1989,17 @@ public class Main {
             }
         }
 
+        // # Expressions
+        {
+            /*
+            # Compile time constant expression
+
+            # Constant expression
+
+                Have certain implications: http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.28
+            */
+        }
+
 		/*
 		# assert
 
@@ -1929,16 +2010,20 @@ public class Main {
 			Only gets run if the `-ea` option is passed to `java` to run the class file.
 
             Vs exceptions:
-            http://programmers.stackexchange.com/questions/137158/is-it-better-to-use-assert-or-illegalargumentexception-for-required-method-param
+
+            - http://programmers.stackexchange.com/questions/137158/is-it-better-to-use-assert-or-illegalargumentexception-for-required-method-param
 		*/
 		{
-			boolean fail = false;
-			try {
-				assert false;
-			} catch(AssertionError e) {
-				fail = true;
-			}
-			assert fail;
+		    // Basic example
+            {
+                boolean fail = false;
+                try {
+                    assert false;
+                } catch(AssertionError e) {
+                    fail = true;
+                }
+                assert fail;
+            }
 
             // Assert with colon.
             // Syntax that sets the error message.
@@ -1952,6 +2037,14 @@ public class Main {
                 System.out.println(message);
                 //assert message == "with colon";
             }
+
+            /*
+            ClassLoader has a few assertion methods that can control if assert is evaluated at runtime:
+            http://docs.oracle.com/javase/7/docs/api/java/lang/ClassLoader.html#setClassAssertionStatus%28java.lang.String,%20boolean%29
+
+            Class has:
+            http://docs.oracle.com/javase/7/docs/api/java/lang/Class.html#desiredAssertionStatus%28%29
+            */
 		}
 
         /*
@@ -2353,6 +2446,17 @@ public class Main {
 
                         `java.io.Serializable` uses it, probably through `getField`,
                         and only serializes fields that don't have it.
+
+                        Transient information is stored in a byte of the bytecode:
+                        https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.5-200-A.1
+
+                    # Serializable
+
+                        TODO
+
+                    # Externalizable
+
+                        TODO
                     */
                     {
                         // ERROR: illegal start of expression.
@@ -2473,15 +2577,26 @@ public class Main {
                 There are no real global functions, only methods.
             */
             {
-                /*
-                # Return multiple values
+                // # return
+                {
+                    /*
+                    # Return multiple values
 
-                    Not supported: <http://stackoverflow.com/questions/457629/how-to-return-multiple-objects-from-a-java-method>
+                        Not supported: <http://stackoverflow.com/questions/457629/how-to-return-multiple-objects-from-a-java-method>
 
-                    There seems to be no concept of tuple as in python: <http://stackoverflow.com/questions/2670982/using-tuples-in-java>
+                        There seems to be no concept of tuple as in python: <http://stackoverflow.com/questions/2670982/using-tuples-in-java>
 
-                    Best solution: create a class that wraps all the return values.
-                */
+                        Best solution: create a class that wraps all the return values.
+                    */
+
+                    /*
+                    A JVM `return` instruction is automatically added to `void` methods
+                    even if you don't add a `return` statement.
+                    */
+                    {
+                        returnVoidImplicit();
+                    }
+                }
 
                 /*
                 # Pass by references
@@ -2566,9 +2681,8 @@ public class Main {
                     /*
                     # native method
 
-                        Implemented as a binary, often generated from a C source.
-                        for speed or access to system specific APIs.
-                        TODO get a minimal example working.
+                        Implemented as a dynamically loaded library that follows the JNI conventions,
+                        often generated from a C source.
                     */
 
                     /*
@@ -2878,6 +2992,9 @@ public class Main {
                 # this
 
                     Current instance.
+
+                    Concept exists in bytecode, which enforces passing `this`
+                    as the first parameter to member methods.
                 */
                 {
                     /*
@@ -3411,7 +3528,9 @@ public class Main {
         }
 
         /*
-        # enum
+        # Enum
+
+            http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.9
 
             Enums in Java are very close to classes.
 
@@ -3420,22 +3539,62 @@ public class Main {
             This is in great contrast where they are just integers.
         */
         {
-            // ERROR: enum types must not be local
+            /*
+            Enums are implicily like static classes.
+
+            So they can't be local or nested inside a non static class.
+
+            http://stackoverflow.com/questions/700831/why-cant-enums-be-declared-locally-in-a-method
+            http://stackoverflow.com/questions/14858036/why-cant-i-create-an-enum-in-an-inner-class-in-java
+            */
             //enum Elocal { A, B };
 
-            assert E.A != E.B;
-
             /*
-            Loop all values of an enum.
-
-            Note how those values are strings by default,
-            so you print them with `%s`.
+            Enum values are not primitives but rather
+            http://docs.oracle.com/javase/7/docs/api/java/lang/Enum.html
             */
             {
-                System.out.println("enum loop:");
-                for (E e : E.values()) {
-                    System.out.format("    %s%n", e);
-                }
+                assert SimpleEnum.A.getClass().getSuperclass() == Enum.class;
+
+                /*
+                But it also gets some methods automatically generated by the compiler:
+                http://stackoverflow.com/questions/13659217/values-method-of-enum
+                e.g. values
+                */
+            }
+
+            // Guaranteed to be different objects.
+            {
+                assert SimpleEnum.A != SimpleEnum.B;
+            }
+
+            /*
+            # values enum
+
+                Get a list of all values.
+
+                Guaranteed by JLS to be in the same order as declared.
+            */
+            {
+                assert Arrays.equals(
+                    SimpleEnum.values(),
+                    new SimpleEnum[]{SimpleEnum.A, SimpleEnum.B, SimpleEnum.C}
+                );
+            }
+
+            assert SimpleEnum.A.name().equals("A");
+            assert SimpleEnum.A.ordinal() == 0;
+
+            /*
+            # Enum constructor
+
+                Enum constructors cannot be protected or public.
+
+                They can only be used directly to initialize the enum "fields".
+            */
+            {
+                assert EnumConstructor.A.getI() == 0;
+                assert EnumConstructor.B.getI() == 1;
             }
         }
 
@@ -3503,7 +3662,7 @@ public class Main {
                 Get `Class` from object.
             */
             {
-                assert (new Class0()).getClass() == Class0.class;
+                assert (new Empty()).getClass() == Empty.class;
             }
 
             /*
@@ -3648,14 +3807,24 @@ public class Main {
         /*
         # null
 
-            <http://stackoverflow.com/questions/2707322/what-is-null-in-java>
+            http://stackoverflow.com/questions/2707322/what-is-null-in-java
+
+            Has explicit bytecode support via the `aconst_null` and `ifnull` instructions.
         */
         {
             // Objects that are not explicitly initialized are initialized to `null`.
             assert publicStaticString == null;
 
-            // # NullPointerException
-            // What you get for attempting to dereference a `null`.
+            // Initialized objects are never null
+            assert new Object() != null;
+
+            /*
+            # NullPointerException
+
+                What you get for attempting to dereference a `null`.
+
+                Exists at the bytecode level: `invoke` instructions are documented to raise it.
+            */
             {
                 String s = null;
                 boolean fail = false;
@@ -3687,6 +3856,9 @@ public class Main {
             Do not confuse arrays with the Array class:
             http://docs.oracle.com/javase/7/docs/api/java/lang/reflect/Array.html
             which just contains some convenience methods to work with arrays.
+
+            Java bytecode has various array-specific instructions such as
+            `newarray`, `arraylength`, `iastore`, etc.
         */
         {
             // # Declare arrays
@@ -4074,6 +4246,12 @@ public class Main {
                     @MyAnnotation(i = 1, s = "abc")
                     class Class {}
                 }
+
+                /*
+                # Annotation inheritance
+
+                    No such thing: http://stackoverflow.com/questions/1624084/why-is-not-possible-to-extend-annotations-in-java
+                */
             }
 
             /*
@@ -4090,7 +4268,6 @@ public class Main {
                 - `Retention`
                 - `Documented` - Marks another annotation for inclusion in the documentation, e.g. Javadoc.
                 - `Target`
-                - `Inherited` - Marks another annotation to be inherited to subclasses of annotated class (by default annotations are not inherited to subclasses).
                 - `Repeatable` - Java 1.8 - Specifies that the annotation can be applied more than once to the same declaration.
             */
             {
@@ -4119,6 +4296,10 @@ public class Main {
                     If used, the compiler generates a warning.
 
                     TODO compiler not generating the warning...
+
+                    There is also the bytecode deprecated attribute,
+                    but it does not seem possible to generate it from Java:
+                    https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.15
                 */
                 {
                     assert AnnotationDeprecated.method() == 0;
@@ -4173,13 +4354,22 @@ public class Main {
                 }
 
                 /*
-                # Target
+                # Target annotation
 
                     Limit what kinds of elements the annotation can be applied to.
 
                     Default: any element type.
 
                     Takes a list, so can have multiple values.
+                */
+
+
+                /*
+                # Inherited annotation
+
+                    Indicates that derived classes will inherit the annotation.
+
+                    False by default.
                 */
             }
         }
@@ -4996,7 +5186,7 @@ public class Main {
                 /*
                 # put
 
-                    . Returns the previous value for the key, null if none.
+                    Returns the previous value for the key, null if none.
                 */
                 {
                     Map<Integer,Integer> m = new TreeMap<>();
@@ -5127,20 +5317,64 @@ public class Main {
                 /*
                 # Properties
 
-                    Parameters that configure the JVM.
+                    http://docs.oracle.com/javase/7/docs/api/java/util/Properties.html
+
+                    Extends Hashtable.
+
+                    Notably returned by `System.getProperties()`,
+                    which seems to be the main design choice force behind it.
+
+                    But you can use it however you want, even though it's kind of ugly.
+
+                    Vs hashmap:
+                    http://stackoverflow.com/questions/2977125/when-to-use-properties-and-when-map-in-java
+                */
+                {
+                    // Only String keys and values are accepted.
+
+                    // Has file IO methods built-in!
+
+                    // Has a per-key defaults system:
+                    Properties p0 = new Properties();
+                    p0.setProperty("a", "0");
+                    p0.setProperty("b", "1");
+                    Properties p1 = new Properties(p0);
+                    p1.setProperty("a", "10");
+                    assert p1.getProperty("a").equals("10");
+                    assert p1.getProperty("b").equals("1");
+                    assert p1.getProperty("c") == null;
+                }
+
+                /*
+                # getProperty
+
+                    Same as `getProperties().getProperty(name)`.
+
+                # getProperties
+
+                    Returns an a system configuration value stored inside a `Properties` object,
+                    which may be used to configure and query JVM parameters.
 
                     Used instead of command line arguments because they are more flexible. TODO how?
-
-                    Predefined ones:
-                    <http://docs.oracle.com/javase/tutorial/essential/environment/sysprop.html>
                 */
                 {
                     /*
-                    # getProperty
+                    # getProperties
 
-                        Get a single property.
+                        Get all properties at once in a `Properties` object:
+                        http://docs.oracle.com/javase/8/docs/api/java/util/Properties.html
+                    */
+                    {
+                        assert System.getProperties().getClass() == Properties.class;
+                    }
 
-                        #os.name
+                    /*
+                    # Predefiened properties
+
+                        List of all predefined properties
+                        <http://docs.oracle.com/javase/tutorial/essential/environment/sysprop.html>
+
+                        # os.name
 
                             May include OS version, and upper case letters. Sample values:
 
@@ -5151,17 +5385,16 @@ public class Main {
 
                             http://stackoverflow.com/questions/228477/how-do-i-programmatically-determine-operating-system-in-java
 
-                        #version
+                        # version
 
                             http://stackoverflow.com/questions/228477/how-do-i-programmatically-determine-operating-system-in-java
                     */
                     {
-                        System.out.println("System.getProperty");
+                        System.out.println("System.getProperty()");
+                        // TODO `file.separator` property vs `File.separator`?
                         System.out.println("  file.separator = " + System.getProperty("file.separator"));
                         System.out.println("  java.io.tmpdir = " + System.getProperty("java.io.tmpdir"));
                         System.out.println("  java.library.path = " + System.getProperty("java.library.path"));
-                        // #version
-                        System.out.println("  java.version = " + System.getProperty("java.version"));
                         System.out.println("  os.arch = " + System.getProperty("os.arch"));
                         System.out.println("  os.name = " + System.getProperty("os.name"));
                     }
@@ -5182,16 +5415,8 @@ public class Main {
 
                         - http://stackoverflow.com/questions/11288083/javaconditional-imports
                     */
-
-                    /*
-                    # getProperties
-
-                        Get all properties at once in a `Properties` object:
-                        http://docs.oracle.com/javase/8/docs/api/java/util/Properties.html
-                    */
                     {
-                        assert System.getProperty("file.separator") ==
-                               System.getProperties().getProperty("file.separator");
+                        System.out.println("  java.version = " + System.getProperty("java.version"));
                     }
 
                     // Custom properties can be passed to the JVM with `-D'custom.property=value'
@@ -5199,8 +5424,6 @@ public class Main {
                         System.out.println("System.getProperty(\"custom.property\") = " +
                                             System.getProperty("custom.property"));
                     }
-
-                    // TODO `file.separator` property vs `File.separator`?
                 }
 
                 /*
@@ -5338,6 +5561,8 @@ public class Main {
             */
             {
                 /*
+                # Path
+
                 # Paths
 
                     <http://docs.oracle.com/javase/7/docs/api/java/nio/file/Paths.html>
@@ -5357,6 +5582,17 @@ public class Main {
                     {
                         System.out.println("cwd = " + Paths.get("").toAbsolutePath().toString());
                     }
+
+                    /*
+                    # join paths
+
+                        http://stackoverflow.com/questions/412380/combine-paths-in-java
+                    */
+                    {
+                        // Paths.get("foo", "bar", "baz.txt");
+                        // new File(String parent, String child)
+                        // path.resolve(Paths.get("child));
+                    }
                 }
 
                 /*
@@ -5369,9 +5605,23 @@ public class Main {
                 */
                 {
                     /*
+                    # delete
+
+                        Remove file or empty directory
+
+                        `Files` has a static version.
+
+                    # rmdir
+
+                        See `delete`.
+                    */
+
+                    /*
                     # rmrf
 
                         http://stackoverflow.com/questions/779519/delete-files-recursively-in-java
+
+                        No JDK way to do it in one line: must use large transversal loop.
                     */
 
                     /*
@@ -5398,6 +5648,38 @@ public class Main {
                         assert f.length() == 3;
                         f.delete();
                     }
+
+                    /*
+                    # createTempFile
+                    */
+                    {
+                        File f = File.createTempFile("aaa", null);
+                    }
+
+                    /*
+                    # createTempDirectory
+                    */
+                    {
+                        //Path directory = Files.createTempDirectory("prefix");
+                        //Files.createFile(directory.resolve(Paths.get("basename")));
+                    }
+                }
+
+                /*
+                # FileSystems
+
+                # FileSystem
+                */
+                {
+                    FileSystem fs = FileSystems.getDefault();
+                    System.out.println("FileSystems.getDefault()");
+                    Iterator<Path> it = fs.getRootDirectories().iterator();
+                    System.out.println("  getRootDirectories()[0] = " + it.next().toString());
+                    if (it.hasNext())
+                        System.out.println("  getRootDirectories()[1] = " + it.next().toString());
+                    System.out.println("  getSeparator() = " + fs.getSeparator());
+                    System.out.println("  isOpen() = " + fs.isOpen());
+                    System.out.println("  isReadOnly() = " + fs.isReadOnly());
                 }
             }
 
@@ -5584,7 +5866,7 @@ public class Main {
 
                         The corresponding reader for those methods is Scanner.
 
-                    -   line flush
+                    -   line flushshin
 
                     -   not throw exceptions: sets an internal flag instead,
                         which you can access with check / setError methods.
@@ -5598,7 +5880,7 @@ public class Main {
 
                     `System.out` and `err` are notable instances.
 
-                    #  Line flushing
+                    # Line flushing
 
                         Stream is flushed automatically whenever a newline is writen to it,
                         either via `println` methods or through `"\n"` literals.
@@ -5672,13 +5954,19 @@ public class Main {
                 /*
                 # DataOutputStream
 
-                    <http://docs.oracle.com/javase/7/docs/api/java/io/DataOutputStream.html>
+                # fwrite
+
+                    http://docs.oracle.com/javase/7/docs/api/java/io/DataOutputStream.html
 
                     Print binary, non-human readable, representations of primitives.
 
                 # DataInputStream
 
-                    <http://docs.oracle.com/javase/7/docs/api/java/io/DataInputStream.html>
+                # fread
+
+                    http://docs.oracle.com/javase/7/docs/api/java/io/DataInputStream.html
+
+                    Implements DataInput http://docs.oracle.com/javase/7/docs/api/java/io/DataInput.html
                 */
                 {
                     int in = 0x00_01_02_03;
@@ -5688,12 +5976,16 @@ public class Main {
                     o.writeInt(in);
                     o.close();
 
-
                     byte[] out = b.toByteArray();
-                    // The representation format is specified in the Javadoc,
-                    // so we can assert it.
-                    // But you will likely only use this if you are going
-                    // to read the data back with `DataInputStream#readXXX` later on.
+                    /*
+                    Unlike C's fwrite, the representation format, and in particular endianess
+                    is specified in the Javadoc, so we can assert it.
+
+                    This is therefore a valid serialization method.
+
+                    But you will likely only use this format if you are going
+                    to read the data back with `DataInputStream#readXXX` later on.
+                    */
                     assert Arrays.equals(out, new byte[]{0, 1, 2, 3});
 
                     DataInputStream i = new DataInputStream(new ByteArrayInputStream(out));
@@ -5838,6 +6130,26 @@ public class Main {
                     The most convenient way seems to be to use this method,
                     and then convert it to a String with `new String(bytes, encoding)`;
                 */
+
+                /*
+                # walkFileTree
+
+                # SimpleFileVisitor
+
+                # FileVisitResult
+
+                    Operate on all files under directory recursively.
+                */
+
+                /*
+                # isDirectory
+                */
+
+                /*
+                # PosixFilePermissions
+
+                    http://docs.oracle.com/javase/7/docs/api/java/nio/file/attribute/PosixFilePermission.html
+                */
             }
 
             /*
@@ -5896,16 +6208,30 @@ public class Main {
         # java.lang
 
             <http://docs.oracle.com/javase/7/docs/api/java/lang/package-summary.html>
-
+        */
+        {
+            /*
             `java.lang.X` classes contents are magic and get automatically imported.
 
             They contain basic utilities.
 
             Autoimport not happen for packages inside Java, e.g., `java.lang.reflect.Field`
             needs to be explicitly imported by the programmer.
-        */
-        {
-            assert java.lang.Integer.class == Integer.class;
+            */
+            {
+                assert java.lang.Integer.class == Integer.class;
+
+                /*
+                It is possible to create classes with the same name as those in `java.lang`.
+
+                However you cannot give them  a `main` method an run them with `java`,
+                which will first load the `java.lang` class in that case, and fail.
+                TODO check. Why?
+                */
+                {
+                    class String {}
+                }
+            }
 
             /*
             # Math
@@ -6045,6 +6371,16 @@ public class Main {
         {
             // TODO
         }
+
+        /*
+        # Signal handling
+
+            Apparently you cannot prevent POSIX signals from killing the JVM,
+            only run some code before it closes with a shutdown hook:
+            http://stackoverflow.com/questions/2541475/capture-sigint-in-java
+
+            The rationale is that signals don't exist in Windows.
+        */
 
         /*
         # System.exit

@@ -53,6 +53,23 @@ Pass parameter to a plugin:
 
 Default parameters can also be set on the `pom.xml` `<configuration>` element. Passing them on the command line does *not* override the pom's value! <http://stackoverflow.com/questions/4660047/override-maven-plugin-configuration-defined-in-pluginmanagement-from-the-command>, <http://jira.codehaus.org/browse/MNG-4979>. The only way is to use a separate profile.
 
+### q
+
+Quiet operation.
+
+Useful when running `mvn exec:java` so that you see only the actual program output.
+
+### version
+
+Shows the Maven version, and other useful system parameters, e.g. the `JAVA_HOME` and maven home. Sample output:
+
+    Apache Maven 3.0.5
+    Maven home: /usr/share/maven
+    Java version: 1.8.0_31, vendor: Oracle Corporation
+    Java home: /usr/lib/jvm/java-8-oracle/jre
+    Default locale: en_US, platform encoding: UTF-8
+    OS name: "linux", version: "3.13.0-48-generic", arch: "amd64", family: "unix"
+
 ## Repositories
 
 Repositories are directories that contain dependencies that Maven can download.
@@ -342,6 +359,16 @@ Plugin goals for the plugin are run as:
 
     mvn <plugin>:<goal>
 
+Specify full package and version of the plugin to be used:
+
+    mvn <package>:<plugin>:<version>:<goal>
+
+E.g.:
+
+    mvn org.apache.maven.plugins:maven-dependency-plugin:2.1:get
+
+Super verbose, and super robust.
+
 Get help on the `exec` plugin:
 
     mvn exec:help
@@ -482,7 +509,7 @@ Generate and install sources jar automatically on `mvn install`:
         </executions>
     </plugin>
 
-#### dependencies
+#### dependency
 
 List the dependencies of a project. TODO: understand:
 
@@ -490,6 +517,25 @@ List the dependencies of a project. TODO: understand:
     mvn dependency:source
 
 Also generates reports under `target/site/dependencies.html`.
+
+Search for unnecessary dependencies <http://stackoverflow.com/questions/1517611/is-there-a-simple-way-to-remove-unused-dependencies-from-a-maven-pom-xml>:
+
+    mvn dependency:analyze
+
+Sample output excerpt:
+
+    [INFO] --- maven-dependency-plugin:2.1:analyze (default-cli) @ spring ---
+    [WARNING] Unused declared dependencies found:
+    [WARNING]    org.springframework:spring-core:jar:4.1.5.RELEASE:compile
+    [WARNING]    org.springframework:spring-beans:jar:4.1.5.RELEASE:compile
+
+So `spring-core` and `spring-beans` were not needed.
+
+Get a single dependency specified from the command line: <http://stackoverflow.com/questions/1776496/a-simple-command-line-to-download-a-remote-maven2-artifact-to-the-local-reposito>:
+
+    mvn dependency:get \
+        -DrepoUrl=http://download.java.net/maven/2/ \
+        -Dartifact=robo-guice:robo-guice:0.4-SNAPSHOT
 
 ## pom.xml
 

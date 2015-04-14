@@ -1,20 +1,13 @@
-IN_EXT ?= .java
 OUT_EXT ?= .class
-RUN ?= Main
-
-INS := $(wildcard *$(IN_EXT))
-OUTS_NOEXT := $(basename $(INS))
-OUTS := $(addsuffix $(OUT_EXT), $(OUTS_NOEXT))
+MAIN ?= Main
 
 .PHONY: all clean
 
-all: $(OUTS)
-
-%$(OUT_EXT): %$(IN_EXT)
-	javac -g -source 1.8 '$<'
+all:
+	javac -g -source 1.8 *.java
 
 clean:
 	rm -f *$(OUT_EXT)
 
 run:
-	java '$(RUN)'
+	java '$(MAIN)$(OUT_EXT)'

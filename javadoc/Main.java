@@ -1,5 +1,6 @@
 /**
-Magic first sentence. Stops after first period.
+Magic first sentence. Stops after first  that is followed by a (blank,
+tab, or line terminator), or at the first block tag.
 <p>
 Document comments must start with two asterisks {@code **}.
 <p>
@@ -11,14 +12,14 @@ like {@code p} and {@code li} are left unclosed:
   <li>c
 </ul>
 
-<h1>#literal</h1>
+<h1># literal</h1>
 
 <p>
 Used to escape the at sign.
 <p>
 {@literal @}param
 
-<h1>#link</h1>
+<h1># link</h1>
 
 <p>
 Class in current package: {@link Main2}.
@@ -47,16 +48,36 @@ The manpage says that the label cannot contain curly braces: {@link java.lang.St
 Link to external Javadoc of JDK or other libraries:
 <a href="http://stackoverflow.com/questions/17580248/javadocs-link-to-external-javadoc">http://stackoverflow.com/questions/17580248/javadocs-link-to-external-javadoc</a>
 <p>
-Link to a resource (non-Java) file: {@link resource} Not possible?
+Link to a resource (non-Java) file: {@code@link resource} Not possible?
 <a href="http://stackoverflow.com/questions/8712556/reference-resources-in-javadoc">http://stackoverflow.com/questions/8712556/reference-resources-in-javadoc"</a>
 
-<h1>#linkplain</h1>
+<h1># value</h1>
+
+<p>
+Inline the value of a static final field, and generate a link to it.
+<p>
+{@code STATIC_FINAL_INT =} {@value #STATIC_FINAL_INT}
+<p>
+Cannot be put inside another Javadoc code block:
+{@code STATIC_FINAL_INT =} {@value #STATIC_FINAL_INT}}
+<p>
+Any compile time constant is parsed alright:
+{@code STATIC_FINAL_INT_SUM =} {@value #STATIC_FINAL_INT_SUM}
+<p>
+String constants are automagically quoted:
+{@code STATIC_FINAL_STRING =} {@value #STATIC_FINAL_STRING}
+<p>
+Objects simply don't show: {@code STATIC_FINAL_OBJECT = @value #STATIC_FINAL_OBJECT}. Using {@code toString} could not work because even though final, the object contents can still be changed.
+<a href="http://stackoverflow.com/questions/19807696/how-to-use-value-tag-in-javadoc">http://stackoverflow.com/questions/19807696/how-to-use-value-tag-in-javadoc</a>
+Javadoc 8 gives an error.
+
+<h1># linkplain</h1>
 
 <p>
 Like link, but don't surround the label in a code block: TODO I don't see any difference!
-{@linkplain @method "The label with linkplain"}, {@linkplain @method "The label with link"}.
+{@linkplain #method "The label with linkplain"}, {@linkplain #method "The label with link"}.
 
-<h1>#code</h1>
+<h1># code</h1>
 
 <p>
 Escapes everything inside it: good to add literal XML to pages to avoid escaping the tags. But you still need pre.
@@ -75,17 +96,29 @@ So unless you have code which contains unbalanced curly braces, it does not matt
 {@code {}<b>outside</b>}
 {@code {{}}<b>outside</b>}
 
-<h1>#see</h1>
+<h1># see</h1>
 
 <p>
-Links to other classes or methods.
+Links to other classes or methods. Multiple can be used.
 <p>
 If it starts with {@code <}, then it is left as is. This makes it easy to add URLs with {@code <a>} elements.
 
+@see Main
 @see Main2
 @see <a href="http://example.com">example.com</a>
 */
 public class Main extends Base {
+
+    /**
+     * {@code @value} without argument on a static final field: {@value}
+     */
+    public static final int STATIC_FINAL_INT = 0;
+
+    public static final int STATIC_FINAL_INT_SUM = 1 + 1;
+
+    public static final String STATIC_FINAL_STRING = "abc";
+
+    public static final Integer STATIC_FINAL_OBJECT = new Integer(1);
 
     /**
      * Method.

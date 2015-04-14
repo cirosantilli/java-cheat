@@ -17,26 +17,6 @@ Useful options:
 
 -   `-ea`: enable assertions. Without this the `assert` statement is not run.
 
--   `-cp`: classpath: colon separated list of where to look for classes.
-
-    Can take either directories or `.class` / `.jar` files.
-
-    The `CLASSPATH` environment variable set, that gives the default path.
-
-    Otherwise, the path is `.`
-
-    Example:
-
-        javac Main.java
-        java Main
-
-    works because `Main` is in the default path.
-
-        javac -cp .:/usr/share/java/junit4.jar Main.java
-        java -cp .:/usr/share/java/junit4.jar org.junit.runner.JUnitCore Main
-
-    finds JUnit by the `.jar` path. `Main` is just a command line argument on the invocation TODO check.
-
 -   `-Da.b=c`: passes a custom property to the program. It can be retrieved with `System.getProperty("a.b")`.
 
 -   `-server` and `-client`.
@@ -46,6 +26,43 @@ Useful options:
     Switch between different HotSpot optimization modes.
 
     `-server` spends more time to optimize JIT as is often desired for server code.
+
+## cp
+
+## classpath
+
+Colon separated list of where to look for classes.
+
+Can take either directories or `.class` / `.jar` files.
+
+The `CLASSPATH` environment variable set, that gives the default path.
+
+Otherwise, the path is `.`
+
+Example:
+
+    javac Main.java
+    java Main
+
+works because `Main` is in the default path.
+
+Jars can be passed to `-cp` and are treated like directories:
+
+    javac -cp .:/usr/share/java/junit4.jar Main.java
+    # Main is a command line argument to JUnitCore's main method.
+    java -cp .:/usr/share/java/junit4.jar org.junit.runner.JUnitCore Main
+
+Java 6 allows `-cp` to contain `*` wildcards, which expands to all `.jar` in that directory:
+
+    java -cp '.:lib/*' Main
+
+Don't forget to quote `'.:lib/*'`, or else bash will expand it.
+
+## jar
+
+Run the main class inside a `.jar` as configured by its metadata.
+
+Cannot be used together with `-cp`. In that case you need to pass the `.jar` to `-cp` and call it's main class with the full path.
 
 ## verbose
 
@@ -78,6 +95,10 @@ Print runtime information to stdout:
     Use object addresses that are 32 bits long even in a 64 bit architecture.
 
     TODO
+
+-   `-XX:+PrintOptoAssembly`
+
+    View JIT compiled code: <http://stackoverflow.com/questions/1503479/how-to-see-jit-compiled-code-in-jvm>
 
 ## JAVA_TOOL_OPTIONS
 

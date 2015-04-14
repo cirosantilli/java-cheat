@@ -5,15 +5,18 @@ Methods which do not require imports such as synchronoized, wait or volatile
 are lower level and used to implement methods on the standard libraries
 such as semaphores or locks.
 
-#synchronized
+# synchronized
 
     aka intrinscic locks.
+
+    Present on the bytecode level through `ACC_SYNCHRONIZED`.
+    TODO could it not be done with monitor instructions?
 
     There are two contexts for the synchronized keyword: methods and blocks.
 
     The keyword has the following effects on methods.
 
-    1. Synchronized methods (posibly different methods!)
+    1. Synchronized methods (possibly different methods!)
     of a single object cannot run at the same time on different threads
 
     2. TODO understand
@@ -27,7 +30,7 @@ such as semaphores or locks.
     On a static method, the lock is on `Class.class` instead of `this`.
     Therefore static and non static synchronized methods *can* run at the same time.
 
-#semaphore
+# semaphore
 
     Semaphores are more flexible than synchronized because:
 
@@ -38,7 +41,7 @@ such as semaphores or locks.
 
     TODO difference from lock, except that locks lock only once?
 
-#lock
+# lock
 
 
 */

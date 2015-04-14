@@ -1,6 +1,9 @@
 /*
 volatile keyword example.
 
+`volatile` has a direct JVM bytecode representation through `ACC_VOLATILE`:
+https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.5
+
 # Outputs
 
 Possible output with volatile:
@@ -67,6 +70,9 @@ Volatile has the following effects on variables:
 
     TODO. Example program where this happens. Not possible in x86_64?
 
+    The non atomicity of `long` and `double` maps to bytecode,
+    where `long` and `double` both take up two stack spaces.
+
 Not being volatile, allows several optimizations when write
 does not need to be made visible:
 
@@ -82,7 +88,7 @@ An increment is made up of 3 operations:
 
 and not even the individual read and write are atomic!
 
-`volatile` in Java remembers C++, but is very different: C++11's memory model
+`volatile` in Java looks a bit like C++, but is very different: C++11's memory model
 does not guarantee volatile writes to be visible across threads!
 
 ChangeListener may be left in an infinite loop as

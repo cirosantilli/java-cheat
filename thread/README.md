@@ -15,18 +15,22 @@ TODO:
 
     - `replace`: replaces only if the value exists / equals an older value. Does the check and insert atomically.
 
--   `AtomicInteger`
+-   `AtomicInteger` and family.
+
+    Vs `volatile boolean`: <http://stackoverflow.com/questions/3786825/volatile-boolean-vs-atomicboolean> Same as `volatile int`, but with less compound operations.
 
 -   `CountDownLatch`
 
 -   `ThreadLocal`
 
--   `ExecutorService`
-
-    - `ForkJoinPool`
-    - `Executors`
-
 -   `ThreadLocalRandom`
+
+- `Executor`
+
+    -   `ExecutorService`
+
+        - `ForkJoinPool`
+        - <http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html>
 
 -   `ForkJoinTask`
 

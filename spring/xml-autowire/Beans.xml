@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  <!--
+  All properties will be automatically resolve to a bean with the same name,
+  unless you explicitly use a property element to override it.
+  -->
+  <bean id="helloWorld" class="HelloWorld" autowire="byName"/>
+  <bean id="sayer" class="Sayer">
+    <property name="message" value="Hello World!"/>
+  </bean>
+</beans>

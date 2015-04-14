@@ -18,6 +18,12 @@ Implement methods in C or C++ and call them from Java, allowing you to write cod
 
 Touches internals of how Java works. TODO how stable is this? Across minors (Java 7 to 8), or even less stable?
 
+## UnsatisfiedLinkError
+
+<http://docs.oracle.com/javase/7/docs/api/java/lang/UnsatisfiedLinkError.html>
+
+What happens if the JVM cannot find the definition of a `native` method.
+
 ## JNA
 
 Popular alternative, that does not require you to write any C code: <https://github.com/twall/jna>

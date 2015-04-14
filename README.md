@@ -10,7 +10,9 @@ Java information and cheatsheets.
 -   [Maven](maven/)
 -   [java utility](java-utility.md)
 -   [JVM](jvm.md)
+    - [Bytecode](bytecode/)
 -   [Javadoc](javadoc/)
+-   [update-java-alternatives](update-java-alternatives.md)
 -   [JAR](jar.md)
 -   [javac](javac/)
 -   [Tomcat](tomcat.md)
@@ -18,14 +20,15 @@ Java information and cheatsheets.
 
 WIP:
 
-- [Bytecode](bytecode.md)
+- [Spring](spring/)
+- [JDB](jdb.md)
 - [Jasmin](jasmin/)
 - [javap](javap.md)
-- [JDB](jdb.md)
+- [Mockito](mockito/)
 - [Java 8](java8/)
-- [Spring](spring/)
-- [Mockito](jasmin/)
+- [WatchService](watch-service/)
 - [Ant](ant.md)
+- [JMX](jmx.md)
 
 Requirements for most directories:
 
@@ -297,23 +300,6 @@ Started in Appeal and BEA Systems, which Oracle bought.
 
 Java comes with several CLI utilities.
 
-### update-java-alternatives
-
-If you are maintaining two Java version on a single Linux machine, you can run `update-alternatives` for executables in one go.
-
-List available alternatives:
-
-    update-java-alternatives -l
-
-Sample output:
-
-    java-7-oracle 1 /usr/lib/jvm/java-7-oracle
-    java-8-oracle 2 /usr/lib/jvm/java-8-oracle
-
-Choose one of the alternatives:
-
-    sudo update-java-alternatives -s java-7-oracle
-
 ### java_vm
 
 TODO
@@ -336,19 +322,7 @@ TODO vs the `jconsole`?
 
 ## JAVA_HOME
 
-TODO what is it? Is it necessary even if the Java executable is already selected? <http://stackoverflow.com/questions/5102022/what-does-the-java-home-environment-variable-do>
-
-If:
-
-    readlink -f `which java`
-
-says:
-
-    /usr/lib/jvm/java-7-oracle/jre/bin/java
-
-then you could set:
-
-    export JAVA_HOME='/usr/lib/jvm/java-7-oracle'
+TODO what is it? <http://stackoverflow.com/questions/5102022/what-does-the-java-home-environment-variable-do> Setting it does not change whih `java` utility is found, that depends only on the `PATH`.
 
 ## Classpath
 
@@ -367,6 +341,21 @@ Environment variable:
 ## Style guides
 
 - <https://google-styleguide.googlecode.com/svn/trunk/javaguide.html>
+
+### Lint tools
+
+<http://stackoverflow.com/questions/14691926/is-there-a-simple-cli-java-linter>
+
+- FindBugs
+
+### Formal verification
+
+JML is the most popular verification input format as part of comments.
+
+Tools that verify it include:
+
+- some JML project tools: <http://www.eecs.ucf.edu/~leavens/JML/download.shtml>
+- <http://www.key-project.org/>
 
 ## Sources
 
