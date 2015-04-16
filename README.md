@@ -1,34 +1,36 @@
-# Java Cheat
+# Java Cheat ![logo](logo.png)
 
 Java information and cheatsheets.
 
--   [Main.java](Main.java): main Java 7 cheat
-    - [HelloWorld.java](HelloWorld.java)
-    - [Binary compatibility](binary-compatibility/)
-    - [ClassNotFoundException](class-not-found/)
--   [JUnit](junit/)
--   [Maven](maven/)
--   [java utility](java-utility.md)
--   [JVM](jvm.md)
-    - [Bytecode](bytecode/)
--   [Javadoc](javadoc/)
--   [update-java-alternatives](update-java-alternatives.md)
--   [JAR](jar.md)
--   [javac](javac/)
--   [Tomcat](tomcat.md)
--   [JNI](jni/)
+1.  [Main.java](Main.java): main Java 7 cheat
+    1. [HelloWorld.java](HelloWorld.java)
+    1. [Binary compatibility](binary-compatibility/)
+    1. [ClassNotFoundException](class-not-found/)
+1.  [JUnit](junit/)
+1.  [Maven](maven/)
+1.  [java utility](java-utility.md)
+1.  [JVM](jvm.md)
+    1. [Bytecode](bytecode/)
+1.  [Javadoc](javadoc/)
+1.  [update-java-alternatives](update-java-alternatives.md)
+1.  [JAR](jar.md)
+1.  [javac](javac/)
+1.  [Tomcat](tomcat.md)
+1.  [JNI](jni/)
 
-WIP:
+## WIP
 
-- [Spring](spring/)
-- [JDB](jdb.md)
-- [Jasmin](jasmin/)
-- [javap](javap.md)
-- [Mockito](mockito/)
-- [Java 8](java8/)
-- [WatchService](watch-service/)
-- [Ant](ant.md)
-- [JMX](jmx.md)
+1. [Spring](spring/)
+1. [JDB](jdb.md)
+1. [Jasmin](jasmin/)
+1. [javap](javap.md)
+1. [Mockito](mockito/)
+1. [Java 8](java8/)
+1. [WatchService](watch-service/)
+1. [Ant](ant.md)
+1. [JMX](jmx.md)
+
+## Usage
 
 Requirements for most directories:
 
@@ -143,17 +145,13 @@ Seems to be easier to deploy than Tomcat, and specially good as a development se
 
 #### GlassFish
 
-GlassFish is the reference implementation of many parts of the API, but not all.
-[This table](https://java.net/projects/javaee-spec/pages/Specifications)
-summarizes reference implementations.
+GlassFish is the reference implementation of many parts of the API, but not all. [This table](https://java.net/projects/javaee-spec/pages/Specifications) summarizes reference implementations.
 
-For example, [GlassFish is the reference for Servlets](https://jcp.org/aboutJava/communityprocess/final/jsr315/),
-but not for JSONP.
+For example, [GlassFish is the reference for Servlets](https://jcp.org/aboutJava/communityprocess/final/jsr315/), but not for JSONP.
 
 It is open source, started by Sun, and sponsored by Oracle.
 
-Oracle has dropped support for it in 2013 in favor of it's Oracle Weblogic,
-but it still is the reference implementation. TODO does it still support?
+Oracle has dropped support for it in 2013 in favor of it's Oracle Weblogic, but it still is the reference implementation. TODO does it still support?
 
 #### WildFly
 
@@ -201,8 +199,7 @@ The 2 was from the 1.2 which introduced major changes.
 
 ### SE implementations
 
-Java specifies interfaces for Java Bytecode and the standard library,
-but not the implementation.
+Java specifies interfaces for Java Bytecode and the standard library, but not the implementation.
 
 There are two main implementations of of the Java Virtual Machine:
 
