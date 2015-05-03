@@ -1,6 +1,9 @@
+.POSIX:
+
 IN_EXT ?= .java
 TMP_EXT ?= .class
 OUT_EXT ?= .byte
+RUN ?= ShortTest
 
 INS := $(wildcard *$(IN_EXT))
 OUTS_NOEXT := $(basename $(INS))
@@ -8,7 +11,7 @@ OUTS := $(addsuffix $(OUT_EXT), $(OUTS_NOEXT))
 TMPS := $(addsuffix $(TMP_EXT), $(OUTS_NOEXT))
 
 .PRECIOUS: $(TMPS)
-.PHONY: all clean
+.PHONY: all clean run
 
 all: $(OUTS)
 
@@ -20,3 +23,6 @@ all: $(OUTS)
 
 clean:
 	rm -f *$(TMP_EXT) *$(OUT_EXT)
+
+run: all
+	java -ea '$(RUN)'

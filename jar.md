@@ -1,8 +1,20 @@
 # JAR
 
-A file that encapsulates multiple Java `.class` files.
+A zip with standardized metadata files, often used to distribute multiple Java `.class` files, i.e. libraries, in one file.
 
-It is the standard way to distribute Java libraries.
+Specification: <http://docs.oracle.com/javase/7/docs/technotes/guides/jar/index.html>
+
+## Create
+
+With the default manifest fields only:
+
+    jar cf Out.jar Main.class Lib.class
+
+Add custom manifest fields:
+
+    jar cfm Out.jar META-INF/MANIFEST.MF Main.class Lib.class
+
+## Open
 
 A JAR is just a ZIP with a standardized file structure inside: you can open it up directly with:
 
@@ -10,22 +22,34 @@ A JAR is just a ZIP with a standardized file structure inside: you can open it u
 
 But you can also use:
 
-    jar -xvf a.jar
+    jar xvf a.jar
 
 List file in JAR without opening it:
 
-    jar -tf a.jar
+    jar tf a.jar
 
-TODO what is the structure of a Jar?
+## Run
 
-Run a Jar with `java`: you must define the `Main` class in the manifest: <http://stackoverflow.com/questions/1238145/how-to-run-a-jar-file> TODO: create a jar and run it.
+Run a Jar with `java`: you must define the `Main` class in the manifest: <http://stackoverflow.com/questions/1238145/how-to-run-a-jar-file>
 
-## Manifest
+## META-INF directory
+
+Contains the Jar metadata in multiple files.
+
+### MANIFEST.MF
 
 Parameters:
 
+- `Manifest-Version`: jar format version, 1.0 for JDK 7. Automatically added by `jar`.
+- `Created-By`: Automatically added by Jar. E.g.: `1.8.0_40 (Oracle Corporation)`.
 - `Main-Class`: what to do by default on `java -jar a.jar`. Sample value: `com.mastergaurav.test.app.MainClass`
 - `Class-Path`: space separated paths added to the classpath. Sample value: `lib/one.jar lib/two.jar`
+
+#### Preamsin-Class
+
+Can be used to get the instrumentation: <http://stackoverflow.com/questions/52353/in-java-what-is-the-best-way-to-determine-the-size-of-an-object>
+
+Runs the: `public static void premain(String args, Instrumentation inst)` method of the given class before the main.
 
 ## WAR
 

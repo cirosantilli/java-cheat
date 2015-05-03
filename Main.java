@@ -106,13 +106,17 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -140,6 +144,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -190,11 +195,21 @@ public class Main {
         Minimalistic integer wrapper.
         */
         public static class MyInt {
-
             public int i;
-
             public MyInt(int i) {
                 this.i = i;
+            }
+        }
+
+        public static class TwoInts implements Serializable {
+            public int i;
+            public int j;
+            public TwoInts(int i, int j) {
+                this.i = i;
+                this.j = j;
+            }
+            public boolean equals(TwoInts other) {
+                return this.i == other.i && this.j == other.j;
             }
         }
 
@@ -1153,7 +1168,8 @@ public class Main {
             */
             {
                 /*
-                `a += b` is not exactly the same as `a = a + b`, but rather `a = (typeof a)(a + b)`.
+                `a += b` is not exactly the same as `a = a + b`,
+                but rather `a = (typeof a)(a + b)`.
 
                 http://stackoverflow.com/questions/8710619/java-operator
                 */
@@ -2450,10 +2466,6 @@ public class Main {
                         Transient information is stored in a byte of the bytecode:
                         https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.5-200-A.1
 
-                    # Serializable
-
-                        TODO
-
                     # Externalizable
 
                         TODO
@@ -2466,6 +2478,75 @@ public class Main {
                         assert  Modifier.isTransient(TransientField.class.getField("ti").getModifiers());
                         assert !Modifier.isTransient(TransientField.class.getField("i").getModifiers());
                     }
+
+                    /*
+                    # Serializable
+
+                        http://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
+
+                        Serialization is transforming objects into `byte[]`.
+
+                        Built-into Java, which can do it automatically for objects with primitive fields.
+
+                        Serializable is only a marker interface (without any methods):
+                        http://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
+                        that tells Java: Hey, you can serialize me.
+
+                        Only only need to implent:
+
+                            private void writeObject(java.io.ObjectOutputStream out)
+                                throws IOException
+                            private void readObject(java.io.ObjectInputStream in)
+                                throws IOException, ClassNotFoundException;
+                            private void readObjectNoData()
+                                throws ObjectStreamException;
+
+                        if you want to customize serialization. TODO how exactly?
+
+                        But usually the only thing we need to do is to omit redundant caches,
+                        which can be done with `transient`.
+
+                        Serialization always acts throgh `ObjectOutputStream`.
+
+                        Serialization is specified at:
+                        http://docs.oracle.com/javase/8/docs/platform/serialization/spec/serialTOC.html
+
+                        There are alternatives to the the default serialization,
+                        notably JAXB which overcome some of it's problems.
+
+                        TODO The following may break serialized data:
+
+                        - http://docs.oracle.com/javase/8/docs/platform/serialization/spec/version.html
+                        - http://stackoverflow.com/questions/4053359/what-changes-can-make-serialized-class-versions-incompatible
+
+                    # ObjectOutputStream
+
+                    # ObjectInputStream
+
+                    # serialVersionUID
+                    */
+                    {
+                        TwoInts i = new TwoInts(1, 2);
+
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        ObjectOutputStream oos = new ObjectOutputStream(baos);
+                        oos.writeObject(i);
+                        byte[] serialized = baos.toByteArray();
+                        oos.close();
+
+                        System.out.println("# Serializable = " + DatatypeConverter.printHexBinary(serialized));
+
+                        ByteArrayInputStream bais = new ByteArrayInputStream(serialized);
+                        ObjectInputStream ois = new ObjectInputStream(bais);
+                        assert ((TwoInts)ois.readObject()).equals(i);
+                        ois.close();
+                    }
+
+                    /*
+                    # Serializable and inheritance
+
+                        All base classes must also be serializable, or NotSerializableException.
+                    */
                 }
             }
 
@@ -4443,14 +4524,19 @@ public class Main {
 
                 # intern
 
-                    Good explanation: http://stackoverflow.com/a/513839/895245
+                # String pool
+
+                # Intering
+
+                    - http://stackoverflow.com/a/29978564/895245
+                    - http://stackoverflow.com/a/513839/895245
 
                     Unlike `+`, `==` is *not* magic for strings,
                     and like for Object compares instances instead of content.
 
                     What *is* magic, is that:
 
-                    -   compile time constants resolve to `String.intern()`,
+                    -   compile time constants resolve to `String.intern()` (on the bytecode level)
                         so `==` works for them.
 
                     -   `+` for compile time constants is done at compile time.
@@ -4467,6 +4553,11 @@ public class Main {
 
                     For you sanity, just don't rely on interning and always use `equals`.
                 */
+                {
+                    assert "abc" == "abc";
+                    assert "abc" != new String("abc");
+                    assert "abc" == new String("abc").intern();
+                }
 
                 /*
                 # Concatenate strings
@@ -5126,6 +5217,14 @@ public class Main {
                 */
                 {
                     assert Arrays.toString(new int[]{0, 1}).equals("[0, 1]");
+
+                    /*
+                    # Print byte[] as hex
+
+                        http://stackoverflow.com/questions/9655181/convert-from-byte-array-to-hex-string-in-java
+
+                        Best options: `DatatypeConverter.printHexBinary()`
+                    */
                 }
 
                 /*
@@ -5516,11 +5615,19 @@ public class Main {
 
                 http://docs.oracle.com/javase/7/docs/api/java/util/Random.html
 
-                Generate a positive integer TODO
-
                 For multi-threaded operations, prefer `ThreadLocalRandom`.
+
+                `Math.random()` is a convenient front-end for this.
             */
             {
+                Random rand = new Random();
+                int min = 5;
+                int max = 10;
+                int r = rand.nextInt((max - min) + 1) + min;
+                assert(r >= min);
+                assert(r <= max);
+                System.out.println("Random#nextInt() = " + r);
+
                 /*
                 # SecureRandom
 
@@ -6242,7 +6349,7 @@ public class Main {
                 /*
                 # random
 
-                    Same as Random#nextDoubl(): Javadoc says that it creates a Random object, and caches it.
+                    Same as `Random#nextDouble()`: Javadoc says that it creates a Random object, and caches it.
 
                     Apparently the seed is taken from `currentTimeMillis()`.
                     http://stackoverflow.com/questions/3535574/getting-current-date-time-for-a-random-number-generators-seed
@@ -6270,6 +6377,24 @@ public class Main {
                 */
                 {
                     Math.sqrt(-1.0);
+                }
+            }
+
+            /*
+            # instrument
+            */
+            {
+                /*
+                # sizeof
+
+                    http://stackoverflow.com/questions/52353/in-java-what-is-the-best-way-to-determine-the-size-of-an-object
+
+                    There are other methods with Unsafe.
+
+                # getObjectSize
+                */
+                {
+                    // TODO does not seems to be instantiable without a Jar?
                 }
             }
         }
@@ -6305,12 +6430,15 @@ public class Main {
             /*
             # Buffer
 
-                <http://docs.oracle.com/javase/7/docs/api/java/nio/Buffer.html>
+                http://docs.oracle.com/javase/7/docs/api/java/nio/Buffer.html
 
-                Interface. Important implementation: `ByteBuffer`.
+                Interface. Implementations: `ByteBuffer` +
+                one for each primitive: `IntBuffer`, etc.
 
-                Good tutorial:
-                <http://tutorials.jenkov.com/java-nio/buffers.html>
+                Tutorials:
+
+                - http://tutorials.jenkov.com/java-nio/buffers.html
+                - http://www.kdgregory.com/index.php?page=java.byteBuffer
 
                 General operation:
 
@@ -6329,26 +6457,65 @@ public class Main {
                 /*
                 # ByteBuffer
 
-                    <http://docs.oracle.com/javase/7/docs/api/java/nio/ByteBuffer.html>
+                    http://docs.oracle.com/javase/7/docs/api/java/nio/ByteBuffer.html
 
                     There are two types of ByteBuffer: direct and indirect.
 
-                    The direct ones may not be stored on the heap.
+                    The direct ones may not be stored on the heap, but there is no guarantee:
 
-                    - <http://stackoverflow.com/questions/5670862/bytebuffer-allocate-vs-bytebuffer-allocatedirect>
-                    - <http://examples.javacodegeeks.com/core-java/nio/bytebuffer/java-direct-bytebuffer-example>
+                    - http://stackoverflow.com/questions/5670862/bytebuffer-allocate-vs-bytebuffer-allocatedirect
+                    - http://examples.javacodegeeks.com/core-java/nio/bytebuffer/java-direct-bytebuffer-example
+
+                    In particular, it does not get moved around, so you can use it with JNI.
                 */
                 {
-                    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(2);
-                    ByteBuffer indirectByteBuffer = ByteBuffer.allocate(2);
+                    /*
+                    # allocateDirect
 
-                    assert byteBuffer.isDirect();
-                    assert !indirectByteBuffer.isDirect();
+                        http://stackoverflow.com/questions/5670862/bytebuffer-allocate-vs-bytebuffer-allocatedirect
+                    */
+                    {
+                        // Primitives
+                        {
+                            ByteBuffer bb = ByteBuffer.allocateDirect(8);
+
+                            bb.putInt(0, 1);
+                            bb.putInt(4, 2);
+                            assert bb.getInt(0) == 1;
+                            assert bb.getInt(4) == 2;
+
+                            boolean fail = false;
+                            try {
+                                bb.getInt(8);
+                            } catch(IndexOutOfBoundsException e) {
+                                fail = true;
+                            }
+                            assert fail;
+                            assert bb.isDirect();
+                        }
+
+                        /*
+                        Objects: you have to serialize and deserialize them,
+                        and then use the bulk `get` and `set` methods
+
+                        You can't get individual fields, or call methods:
+                        before you do anything you must deserialize, so it is really inneficient.
+
+                        http://stackoverflow.com/questions/7071167/putting-an-object-into-a-bytebuffer
+                        */
+                    }
+
+                    /*
+                    # allocate
+                    */
+                    {
+                        ByteBuffer bb = ByteBuffer.allocate(2);
+                        assert !bb.isDirect();
+                        // TODO actually use it, and show that direct is slower than direct.
+                    }
 
                     // TODO
-                    assert !byteBuffer.hasArray();
-
-                    // TODO actually use them, and show that direct is faster.
+                    //assert !byteBuffer.hasArray();
                 }
             }
         }

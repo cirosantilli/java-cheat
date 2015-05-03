@@ -52,20 +52,20 @@ Entries in the constant table can then reference other entries in the constant t
 
 <https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.2>:
 
-    B 	byte 	signed byte
-    C 	char 	Unicode character code point in the Basic Multilingual Plane, encoded with UTF-16
-    D 	double 	double-precision floating-point value
-    F 	float 	single-precision floating-point value
-    I 	int 	integer
-    J 	long 	long integer
-    L ClassName ; 	reference 	an instance of class ClassName
-    S 	short 	signed short
-    Z 	boolean 	true or false
-    [ 	reference 	one array dimension
+- `B`: byte: unsigned byte
+- `C`: char: UTF-16 encoded in BMP
+- `D`: double
+- `F`: float
+- `I`: int
+- `J`: long
+- `LClassName;`: instance of `ClassName`
+- `S`: short
+- `Z`: boolean
+- `[`: array
 
 For the return type, there is also void:
 
-    V 		void for return type.
+- `V`: void
 
 ## Methods
 
@@ -291,7 +291,11 @@ TODO
 
 #### jsr_w
 
-TODO
+#### ret
+
+<http://stackoverflow.com/questions/5871190/why-are-jsr-ret-deprecated-java-bytecode>
+
+Not used in Oracle's Java compiler since Java 6.
 
 ### Synthetic class
 
