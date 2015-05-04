@@ -1,4 +1,4 @@
-public class Main {
+final public class Main {
     public static void main(String [] args) {
         System.out.println("Object");
         System.out.println(Sizeof.sizeof(new Object()));

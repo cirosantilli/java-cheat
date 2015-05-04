@@ -18,6 +18,6 @@ Things that break APIs:
 
     If clients had already extended and added a method with the same name, the API breaks.
 
-## Sources
+## Bibliography
 
 - <https://wiki.eclipse.org/Evolving_Java-based_APIs>, <https://wiki.eclipse.org/Evolving_Java-based_APIs_2>

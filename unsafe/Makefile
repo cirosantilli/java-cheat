@@ -6,9 +6,10 @@ RUN ?= Main
 
 all:
 	javac -XDignore.symbol.file *.java
+	jar -cfm Sizeof.jar META-INF/MANIFEST.MF Sizeof.class
 
 clean:
-	rm -f *.class
+	rm -f *.class *.jar *.log
 
 run: all
-	java -ea '$(RUN)'
+	java -ea -javaagent:Sizeof.jar '$(RUN)'

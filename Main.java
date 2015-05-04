@@ -6484,6 +6484,7 @@ public class Main {
                             assert bb.getInt(0) == 1;
                             assert bb.getInt(4) == 2;
 
+                            // Bound chekcs are done.
                             boolean fail = false;
                             try {
                                 bb.getInt(8);
@@ -6491,6 +6492,7 @@ public class Main {
                                 fail = true;
                             }
                             assert fail;
+
                             assert bb.isDirect();
                         }
 

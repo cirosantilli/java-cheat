@@ -88,17 +88,21 @@ Print runtime information to stdout:
 
     If exceeded, trigger garbage collection. Deprecated in JDK 8, in favor of `-XX:MetaspaceSize`.
 
--   `-XX:+UseCompressedOops`
-
-    <https://wikis.oracle.com/display/HotSpotInternals/CompressedOops>
-
-    Use object addresses that are 32 bits long even in a 64 bit architecture.
-
-    TODO
-
 -   `-XX:+PrintOptoAssembly`
 
     View JIT compiled code: <http://stackoverflow.com/questions/1503479/how-to-see-jit-compiled-code-in-jvm>
+
+### UserCompressedOops
+
+`-XX:+UseCompressedOops`
+
+<https://wikis.oracle.com/display/HotSpotInternals/CompressedOops>
+
+Turned on by default, since 32 bits are usually enough for all memory.
+
+Turned off automatically is you set `-Xmx` greater than 32GiB, since that in that case you might need even more objects.
+
+Use object addresses that are 32 bits long even in a 64 bit architecture.
 
 ## JAVA_TOOL_OPTIONS
 
