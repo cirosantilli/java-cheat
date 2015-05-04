@@ -1,0 +1,2 @@
+@RetentionClassAnnotation
+public class RetentionClass {}

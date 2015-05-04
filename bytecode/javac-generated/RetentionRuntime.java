@@ -1,0 +1,2 @@
+@RetentionRuntimeAnnotation
+public class RetentionRuntime {}

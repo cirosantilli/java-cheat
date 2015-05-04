@@ -417,6 +417,15 @@ public class Main {
             public String s();
         }
 
+        @Retention(RetentionPolicy.SOURCE)
+        @interface RetentionSource {}
+
+        @Retention(RetentionPolicy.RUNTIME)
+        @interface RetentionRuntime {}
+
+        @Retention(RetentionPolicy.CLASS)
+        @interface RetentionClass {}
+
     // Enum
 
         public enum SimpleEnum {
@@ -4432,6 +4441,23 @@ public class Main {
                         Only useful for bytecode level operations, e.g. obfuscators.
                 */
                 {
+                    {
+                        @RetentionSource
+                        class C {}
+                        assert C.class.getAnnotations().length == 0;
+                    }
+
+                    {
+                        @RetentionClass
+                        class C {}
+                        assert C.class.getAnnotations().length == 0;
+                    }
+
+                    {
+                        @RetentionRuntime
+                        class C {}
+                        assert C.class.getAnnotations().length == 1;
+                    }
                 }
 
                 /*
