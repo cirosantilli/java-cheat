@@ -133,6 +133,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -831,17 +832,26 @@ public class Main {
             /*
             # char
 
-                Unicode character.
+                http://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.2
 
-                UTF-16 representation guaranteed, thus 2 to 4 bytes each, unsigned.
-
-                <http://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.2>
-
-                Backslash escapes can be used.
+                Unicode character, guaranteed 16-bit.
             */
             {
                 assert 0x100 == ((int)'Ā');
-                assert 0x100 == ((int)'\u0100');
+
+                // Backslash escapes can be used.
+                assert 0xFFFF == ((int)'\uFFFF');
+
+                /*
+                4 byte UTF-16 characters need 2 chars.
+
+                \ u literals can only go up to FFFF.
+
+                You need two \ u escapes for the 4 byte characters.
+
+                Some string methods consider 4-byte characters, and others not. See `charAt`.
+                */
+                String s = "\uFFFF\uFFFF";
             }
 
             /*
@@ -964,10 +974,15 @@ public class Main {
 
                     # Wrapper pool
 
-                        http://stackoverflow.com/questions/1700081/why-does-128-128-return-false-but-127-127-return-true-in-this-code
+                        Each wrapper has a cache pool that makes `==` equals on a range:
+
+                        - http://stackoverflow.com/questions/1700081/why-does-128-128-return-false-but-127-127-return-true-in-this-code
+                        - http://docs.oracle.com/javase/7/docs/api/java/lang/Integer.html#valueOf%28int%29
 
                         Boxing resolves to `Integer.valueOf()`,
                         which like Strings has a pool mechanism.
+
+                        This is documented both on the JLS and on the `valueOf()` wrapper methods.
 
                         But unlike strings, the pool mechanism is only
                         for a limited range of integers
@@ -982,26 +997,35 @@ public class Main {
                         Summary: **always** use `equals()` to compare wrappers!
                     */
                     {
-                        assert Integer.valueOf(127) == Integer.valueOf(127);
-                        assert Integer.valueOf(128) != Integer.valueOf(128);
-
-                        // Same as above.
-                        {
-                            Integer i1 = 127;
-                            Integer i2 = 127;
-                            assert i1 == i2;
-                        }
-                        {
-                            Integer i1 = 128;
-                            Integer i2 = 128;
-                            assert i1 != i2;
-                        }
-
                         assert Boolean.valueOf(true) == Boolean.valueOf(true);
                         assert Boolean.valueOf(false) == Boolean.valueOf(false);
 
-                        // New raw objects however are different as usual.
-                        assert new Integer(127) != new Integer(127);
+                        // Byte: all values cached.
+                        assert Byte.valueOf((byte)127) == Byte.valueOf((byte)127);
+                        assert Byte.valueOf((byte)-128) == Byte.valueOf((byte)-128);
+
+                        // Char: from 0 to `\u007F`, the ASCII range
+
+                        // Integer
+                        {
+                            assert Integer.valueOf(127) == Integer.valueOf(127);
+                            assert Integer.valueOf(128) != Integer.valueOf(128);
+
+                            // Same as above.
+                            {
+                                Integer i1 = 127;
+                                Integer i2 = 127;
+                                assert i1 == i2;
+                            }
+                            {
+                                Integer i1 = 128;
+                                Integer i2 = 128;
+                                assert i1 != i2;
+                            }
+
+                            // New raw objects however are different as usual.
+                            assert new Integer(127) != new Integer(127);
+                        }
                     }
                 }
 
@@ -1717,7 +1741,7 @@ public class Main {
             # Enhanced for statement
 
                 Called `for-each` on the guide:
-                <http://docs.oracle.com/javase/8/docs/technotes/guides/language/foreach.html>
+                http://docs.oracle.com/javase/8/docs/technotes/guides/language/foreach.html
                 but only "enhanced for statement" on the JLS7 14.14.2
 
                 Works with any class that implements Iterable,
@@ -4544,6 +4568,15 @@ public class Main {
                 }
 
                 /*
+                # length for String
+
+                    Is a method, and not the magic `.length` field, since String is not an Array.
+                */
+                {
+                    assert "abc".length() == 3;
+                }
+
+                /*
                 # Compare strings
 
                 # == operator for strings
@@ -4642,7 +4675,11 @@ public class Main {
                     // http://stackoverflow.com/questions/878573/java-multiline-string
                 }
 
-                // Get character.
+                /*
+                # charAt
+
+                    Get character at given position.
+                */
                 {
                     assert "ab".charAt(0) == 'a';
 
@@ -4651,12 +4688,42 @@ public class Main {
                     // Furthermore, Strings are immutable,
                     // and brace notation invites mutability.
                     //assert "ab"[0] == "a";
+
+                    /*
+                    4-byte UTF-16 characters are returned as two char...
+
+                    To deal with those properly, you need to use the codePointXXX methods.
+
+                    Just imagine how much Java code has been broken by this...
+
+                    http://docs.oracle.com/javase/7/docs/api/java/lang/String.html#codePointAt%28int%29
+
+                    This is of course like this because when Java was developed, UTF-16 was the hot encoding,
+                    and the 4-byte extension did not exist yet, and UTF-8 was not popular at the time.
+                    */
+                    {
+                        // TODO example
+                    }
                 }
+
+                /*
+                # toCharArray
+
+                    Makes a copy.
+                */
+
+                /*
+                # Iterate string characters
+
+                    http://stackoverflow.com/questions/196830/what-is-the-easiest-best-most-correct-way-to-iterate-through-the-characters-of-a
+
+                    For loop with explicit variable.
+                */
 
                 /*
                 # repr like in Python
 
-                    Not by default: <http://stackoverflow.com/questions/1350397/java-equivalent-of-python-repr>
+                    Not by default: http://stackoverflow.com/questions/1350397/java-equivalent-of-python-repr
                 */
 
                 /*
@@ -4848,7 +4915,7 @@ public class Main {
                 /*
                 # List
 
-                    Interface: <api/java/util/List.html>
+                    Interface: https://docs.oracle.com/javase/7/docs/api/java/util/List.html
 
                     Superinterface: Collection.
 
@@ -4859,6 +4926,8 @@ public class Main {
 
                     - `LinkedList`
                     - `ArrayList`
+
+                    List basically only contains operations that `ArrayList`, can do well.
                 */
                 {
                     /*
@@ -4907,17 +4976,23 @@ public class Main {
                     /*
                     # LinkedList
 
-                        Implements `List`.
+                        Implements `List`, `Deque` and `Queue`.
 
-                        Doubly linked list.
+                        The list is doubly linked.
 
-                        <api/java/util/LinkedList.html>
+                        https://docs.oracle.com/javase/7/docs/api/java/util/LinkedList.html
+
+                    # Deque
+
+                        Supports operations on both ends of the queue.
                     */
                     {
-                        List<Integer> l = new LinkedList<>();
+                        Deque<Integer> l = new LinkedList<>();
                         l.add(1);
                         l.add(2);
                         assert l.size() == 2;
+                        assert l.pop() == 1;
+                        assert l.size() == 1;
                     }
 
                     /*
@@ -4925,9 +5000,14 @@ public class Main {
 
                         Implements `List`.
 
+                        List basically only contains operations which `ArrayList` can do efficiently.
+
+                        Other operations that would require array rotation are in other interfaces
+                        like Deque and Queue.
+
                         Dynamically allocated array-backed list.
 
-                        <api/java/util/ArrayList.html>
+                        https://docs.oracle.com/javase/7/docs/api/java/util/ArrayList.html
 
                     # Vector
 
@@ -4949,7 +5029,9 @@ public class Main {
 
                         http://docs.oracle.com/javase/7/docs/api/java/util/Stack.html
 
-                        TODO vs ArrayList?
+                        Derived from Vector, thus synchronized.
+
+                        If you want a regular stack, just use `LinkedList`.
                     */
                     {
                         Stack<Integer> s = new Stack<>();
@@ -5304,8 +5386,9 @@ public class Main {
                     Map<Integer,String> m = new TreeMap<>();
                     m.put(0, "zero");
                     m.put(1, "one");
-                    assert m.get(0) == "zero";
-                    assert m.get(1) == "one";
+                    assert m.get(0).equals("zero");
+                    assert m.get(1).equals("one");
+                    assert m.get(2) == null;
                 }
 
                 /*

@@ -46,6 +46,15 @@ The `.NET` platform is somewhat equivalent to the Java platform as it also suppo
 
 A good way to learn bytecode is to generate it from assemblers: programs that take a human readable language that maps 1-to-1 to bytecode instructions. The most popular assembler seem to be [Jasmin](jasmin/): we will make the main bytecode cheat there.
 
+## Implementations
+
+There have been hardware implementations of the JVM:
+
+- <https://en.wikipedia.org/wiki/Java_processor>
+- <http://stackoverflow.com/questions/1383947/can-we-implement-a-java-interpreter-in-hardware-that-executes-java-bytecodes-nat>
+
+but they were not very successful.
+
 ## Virtual machine vs interpreter
 
 <http://stackoverflow.com/questions/441824/java-virtual-machine-vs-python-interpreter-parlance>
