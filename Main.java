@@ -1716,7 +1716,7 @@ public class Main {
 
                     The maximum can be configured with command line options.
 
-                    <http://docs.oracle.com/javase/7/docs/api/java/lang/OutOfMemoryError.html>
+                    http://docs.oracle.com/javase/7/docs/api/java/lang/OutOfMemoryError.html
                 */
 
                 /*
@@ -4538,7 +4538,7 @@ public class Main {
             /*
             # String
 
-                <http://docs.oracle.com/javase/7/docs/api/java/lang/String.html>
+                http://docs.oracle.com/javase/7/docs/api/java/lang/String.html
 
                 Immutable. Therefore not a Collection, which would require `add`.
                 It implements `CharSequence` instead.

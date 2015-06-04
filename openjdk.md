@@ -59,11 +59,13 @@ Some interesting files and directories:
 
 -   `jdk/src/share/classes/java`: JCL
 
--   `hotspot`: the VM
+-   `hotspot`: the VM, including many native methods. There are also some native methods under `jdk/src`.
 
     -   `hotspot/src/share/vm`: platform agnostic VM code, mainly C++.
 
     -   `hotspot/src/share/os`: OS specific code, contains `bsd`, `linux`, `posix` (used for all others but Windows), `solaris`, `windows`
+
+        Contains the definition of several native methods.
 
     -   `hotspot/src/share/cpu`: OS specific code
 
@@ -74,6 +76,3 @@ Some interesting files and directories:
             <http://openjdk.java.net/projects/zero/>
 
 -   `langtools/src/share/classes/com/sun/tools/javadoc/Main.java`: Javadoc
-
-Main files:
-

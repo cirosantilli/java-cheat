@@ -80,7 +80,9 @@ No simple solution seems to exist.
 
 <http://stackoverflow.com/questions/1667830/running-a-jar-file-without-directly-calling-java>
 
-Since Java is not directly interpreted from source, no simple, standard and good way.
+Since Java is not directly interpreted from source, there no simple, standard and good way.
+
+`binfmt_misc` is the best method on Linux to run a `.class`.
 
 ## Class data sharing
 
