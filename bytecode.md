@@ -2,16 +2,7 @@
 
 Learn Java bytecode.
 
-1.  [Main.j](Main.j)
-1.  [Javac Generated](javac-generated)
-1.  `VerifyError`
-    1. [NewInvokespecialTwice.j](NewInvokespecialTwice.j)
-    1. [NewWithoutInvokespecial.j](NewWithoutInvokespecial.j)
-    1. [NoConstructor.j](NoConstructor.j)
-    1. [NoReturn.j](NoReturn.j)
-    1. [StackOverflow.j](StackOverflow.j)
-
-## Sources
+## Bibliography
 
 Official source: <https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html>
 
@@ -24,8 +15,8 @@ Lots of common usage for the instructions: <http://cs.au.dk/~mis/dOvs/jvmspec/re
 Rotate between:
 
 - read the specs: <https://docs.oracle.com/javase/specs/jvms/se7/html/index.html>. Chapters 2, 4, and 6 are the meat.
-- `javac` compile small Java examples, then understand every byte of `hd Class.class` and `javap Class.class`.
-- make your own bytecode with an assembler like Jasmin.
+- `javac` compile small Java examples, then understand every byte of `hd Class.class`. Then `javap Class.class` in every language construct.
+- make your own bytecode with an assembler like Jasmin
 
 ## Global structure of the class file
 

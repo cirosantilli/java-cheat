@@ -690,9 +690,6 @@ public class Main {
 
                     Character.isJavaIdentifierStart(int)
 
-                The only weird character mentioned explicitly by the JLS is `$`.
-                Sounds like... JavaScript and mercenary money makers.
-
                 is `true`. http://docs.oracle.com/javase/7/docs/api/java/lang/Character.html#isJavaIdentifierPart%28int%29
 
                 It is not clear to me if the API description there is precise or not,
@@ -702,8 +699,27 @@ public class Main {
                 `; [ / < > :` is valid: http://stackoverflow.com/questions/26791204/why-does-the-jvm-allow-us-to-name-a-function-starting-with-a-digit-in-bytecode
             */
             {
-                int $ = 0;
-                assert $ == 0;
+                /*
+                # Dollar in identifiers
+
+                # $
+
+                    The only weird character mentioned explicitly by the JLS is `$`.
+                    Sounds like... JavaScript and mercenary money makers.
+
+                    However the JLS 7 3.8 says:
+
+                    > The $ character should be used only in mechanically generated source code or,
+                    > rarely, to access pre-existing names on legacy systems
+
+                    and it is easy to cause name conflicts if you do that.
+
+                    So never ever use it.
+                */
+                {
+                    int $ = 0;
+                    assert $ == 0;
+                }
             }
 
             {
@@ -2586,7 +2602,7 @@ public class Main {
             /*
             # Class class
 
-                <http://docs.oracle.com/javase/7/docs/api/java/lang/Class.html>
+                http://docs.oracle.com/javase/7/docs/api/java/lang/Class.html
 
                 `Class` is also an object of class `Class`
                 which contains metainformation on a class.
@@ -2822,8 +2838,6 @@ public class Main {
 
                 // # Overload
                 {
-                    // TODO use existing methods
-
                     // TODO create example that overload fails with generics
 
                     // TODO check out overload derivation rules.
@@ -3980,12 +3994,15 @@ public class Main {
                 /*
                 Putting `[]` after `is` exactly the same as before.
 
-                I find it bad style since it splits type infomation appart:
+                I find after bad style since it splits type infomation appart:
                 type is `int[]`, not `int`.
+
+                Can even use both?
                 */
                 {
                     int[] is;
                     int js[];
+                    int[] ks[];
                 }
             }
 
@@ -5736,6 +5753,25 @@ public class Main {
                 assert(r >= min);
                 assert(r <= max);
                 System.out.println("Random#nextInt() = " + r);
+
+                /*
+                Positive random int.
+                */
+                {
+                    /*
+                    Math.abs is not correct because 2^32 == Integer.MIN_VALUE
+                    does not have an encodable -1
+
+                    `Random.nextInt(Integer.MAX_VALUE)` does not work because it leaves out the largets number.
+
+                    http://stackoverflow.com/questions/5827023/java-random-giving-negative-numbers
+
+                    Solution: expose the protected next method on a base class.
+                    */
+                    {
+                        //assert new Random().next(Integer.SIZE - 1) > 0;
+                    }
+                }
 
                 /*
                 # SecureRandom

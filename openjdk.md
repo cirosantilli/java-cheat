@@ -76,3 +76,13 @@ Some interesting files and directories:
             <http://openjdk.java.net/projects/zero/>
 
 -   `langtools/src/share/classes/com/sun/tools/javadoc/Main.java`: Javadoc
+
+-   `langtools/src/share/classes/com/sun/tools/javac/Main.java`: Javac
+
+## Issue tracker
+
+Create a new issue or feature request: <http://bugreport.java.com/submit_intro.do> Bugs only appear after review. Bulls***.
+
+TODO how to browse the bugs? More bull****?
+
+TODO vs <https://bugs.openjdk.java.net>? On that site you need a login, and to get it you need Author status...

@@ -2,9 +2,11 @@
 Non-compact switch example, thus likely to compile to `lookupswitch`.
 */
 
-public class SwitchSpread {
+import java.util.Random;
+
+public class SwitchVerySpread {
     public static void main(String[] args) {
-        int i = 1;
+        int i = new Random().nextInt() % 6;
         int j = -1;
         switch (i) {
             case 0:

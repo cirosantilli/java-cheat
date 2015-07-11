@@ -23,7 +23,7 @@ Java information and cheatsheets.
     1. [javac](javac/)
     1. [JAR](jar.md)
 1.  [JVM](jvm.md)
-    1. [Bytecode](bytecode/)
+    1. [Bytecode](bytecode.md)
 1.  Third party
     1. [JUnit](junit/)
     1. [Maven](maven/)
