@@ -13,10 +13,10 @@ RUN_BASENAME := $(RUN)$(OUT_EXT)
 .PHONY: clean run
 
 $(RUN_BASENAME): $(OUTS)
-	$(CCC) --main='$(RUN)' -o '$@' $+
+	$(CCC) -ggdb3 --main='$(RUN)' -o '$@' $+
 
 %$(TMP_EXT): %$(IN_EXT)
-	$(CCC) -c '$<' -o '$@'
+	$(CCC) -c -ggdb3 '$<' -o '$@'
 
 clean:
 	rm -f *'$(TMP_EXT)' '$(RUN_BASENAME)'
