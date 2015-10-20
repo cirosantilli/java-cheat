@@ -1,6 +1,6 @@
 # Java Cheat ![logo](logo.png)
 
-Java information and cheatsheets.
+Java minimal examples. Asserts used wherever possible.
 
 1.  [Getting started](getting-started.md)
 1.  Code

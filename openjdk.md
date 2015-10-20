@@ -12,6 +12,22 @@ Sample output of `java -version` on Ubuntu 14.04:
 
 Source browser and mercurial URLs: <http://hg.openjdk.java.net/>. Mercurial.
 
+## Versioning
+
+TODO how is it versioned?
+
+It seems to use:
+
+    jdk8u60-b12
+
+to mean:
+
+- `8`: major
+- `60`: minor, `u` for Update
+- `12`: patch, `b` for Build
+
+TODO: `jdk8u60-b26` vs `jdk8-b27`? AKA http://hg.openjdk.java.net/jdk8u vs http://hg.openjdk.java.net/jdk8
+
 ## OpenJDK 8 source code
 
 ### Clone and build
@@ -79,7 +95,13 @@ Some interesting files and directories:
 
 -   `langtools/src/share/classes/com/sun/tools/javac/Main.java`: Javac
 
+## Contribution process
+
 ## Issue tracker
+
+The Java process is very closed, probably because of Oracle?
+
+I can't even manage to post an issue, so I wonder if it is even possible to have patches merged.
 
 Create a new issue or feature request: <http://bugreport.java.com/submit_intro.do> Bugs only appear after review. Bulls***.
 
