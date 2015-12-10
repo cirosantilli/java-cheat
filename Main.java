@@ -1,6 +1,8 @@
 /*
 Main Java 7 cheat.
 
+TODO: this is being split up into multiple files to make things more searchable.
+
 Will include every test that does not take too long or produce too much output.
 
 Assertions will be used wherever possible, and values will only be printed if
@@ -15,7 +17,7 @@ they cannot be deterministically checked.
     - get current line number
     - get current function name
 
-    #conditional compile according to Java version / OS
+    # Conditional compile according to Java version / OS
 
         - Create an interface with a builder for implementations
         - Detect OS / Java version with `System.getProperty`
@@ -144,7 +146,6 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.Stack;
-import java.util.TreeMap;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
@@ -179,7 +180,6 @@ public class Main {
     // General purpose fields
 
         public static int publicStaticInt;
-        public static String publicStaticString;
 
     // Field modifiers
 
@@ -367,32 +367,6 @@ public class Main {
                 }
             }
 
-        // Generics
-
-            public static <T> T genericMethod(T i) {
-                return i;
-            }
-
-            public static <T> String genericGetClass(T i) {
-                return i.getClass().getSimpleName();
-            }
-
-            //public static <T> T genericGetInstance() {
-                //return what?
-            //}
-
-            //public static <T> Class<T> genericGetClassDotClass(T t) {
-                //return T.class;
-            //}
-
-            public static <T> String genericMethodGenericArgument(List<T> l) {
-                return l.getClass().getSimpleName();
-            }
-
-            public static class GenericStatic<T> {
-                static int i = 0;
-            }
-
         // Interface
 
             interface EmptyInterface {}
@@ -492,10 +466,6 @@ public class Main {
             // Only assigns the local `i` to a new object,
             // but does not change the original `i`.
             i = new Integer(i.intValue() + 1);
-        }
-
-        static int arrayParam(int[] is) {
-            return is[0] + is[1];
         }
 
         static int varargMethod(int... is) {
@@ -1790,6 +1760,8 @@ public class Main {
                 # Iterator
 
                 # Iterable
+
+                    TODO implement some examples.
                 */
                 {
                     /*
@@ -1806,6 +1778,47 @@ public class Main {
                         http://docs.oracle.com/javase/7/docs/api/java/util/Enumeration.html
 
                         Deprecated for `Iterator`.
+                    */
+
+                    /*
+                    # remove
+
+                        Remove the last element that was iterated with `next()`.
+
+                        You must:
+
+                        - only call it at most once per next
+                        - not call it before next
+
+                        or else `IllegalStateException`.
+
+                        This is the only way that a list may be modified while it is being iterated over.
+                    */
+                    {
+                        Deque<Integer> l = new LinkedList<Integer>();
+                        l.add(1);
+                        l.add(2);
+                        Iterator<Integer> it = l.iterator();
+                        assert it.next() == 1;
+                        it.remove();
+                        assert l.pollFirst() == 2;
+                        assert l.isEmpty();
+
+                        /* TODO show Illegal state exception cases. */
+                    }
+
+                    /*
+                    # Iterator insert
+
+                    # Iterator update
+
+                        TODO: how to insert and update an item while iterating over a list?
+
+                        http://stackoverflow.com/questions/993025/java-adding-elements-to-a-collection-during-iteration
+
+                        Not possible with Iterator, but is possible with ListIterator, which has add and set.
+
+                        Like remove, those act on the last `next()`.
                     */
                 }
             }
@@ -2128,7 +2141,7 @@ public class Main {
                 Keep the little table in mind:
                 http://docs.oracle.com/javase/tutorial/java/javaOO/accesscontrol.html
 
-                Java has 4 class scopes: one more than C++, namely package-private.
+                Java has 4 class scopes: one more than C++, which does not have package-private.
 
             # Public
 
@@ -2152,284 +2165,6 @@ public class Main {
                     class Local {
                         int i;
                     }
-                }
-            }
-
-            /*
-            # Generics
-
-                Introduced in Java 5 to allow more compile time checks.
-
-                Incurs not runtime cost because of type erasure.
-
-                # Templates
-
-                    Superficially similar concept in C++, but in C++ templates compile exactly to code,
-                    while Java also relies on polymorphism TODO check.
-
-                Both types and methods can be generic. both will be commented here.
-
-                # Vs polymorphism
-
-                    <http://programmers.stackexchange.com/questions/227918/java-use-polymorphism-or-bounded-type-parameters>
-
-                    In many cases, are the same.
-
-                    In a few cases, generics are more powerful.
-
-                    Only use them if you need the extra capabilities,
-                    as they make the code harder to read.
-
-                    Cases where they are needed:
-
-                    - the type of a function parameter is parametrized by the type
-                    - return value
-
-                    TODO understand why in those cases are necessary.
-
-                # Parametrized types
-
-                    Types that depend on other types, e.g. `LinkedList<String>`.
-
-                # Type arguments
-
-                    Types passed to parametrized types. E.g. `String` in `LinkedList<String>`.
-            */
-            {
-                /*
-                # Raw types
-
-                    Generic types but without passing the generic arguments.
-
-                    This is how Java was before 1.5: the syntax is only kept for backwards compatibility.
-
-                    Never use this on new code, as you lose compile time checks.
-
-                    The main reason that generics are useful is that most collections contain a single type of objects.
-                    Generics then add typecasts and typechecks automatically for us.
-                */
-                {
-                    // The pre 1.5 raw types way.
-                    {
-	                    @SuppressWarnings({ "rawtypes" })
-                        ArrayList names = new ArrayList();
-                        @SuppressWarnings({ "unchecked" })
-                        boolean b = names.add("abc");
-                        @SuppressWarnings({ "unchecked" })
-                        boolean b2 = names.add(1);
-
-                        // Object returned by default.
-                        Object name = names.get(0);
-                        // We've done this cast correctly.
-                        name = (String)name;
-                        assert(name.equals("abc"));
-
-                        boolean fail = false;
-                        try {
-                            name = (String) names.get(1);
-                        } catch (ClassCastException e) {
-                            fail = true;
-                        }
-                        assert fail;
-                    }
-
-                    // After generics: see how much better this is than with raw types
-                    // if our container is supposed to contain only a single data type.
-                    {
-                        ArrayList<String> names = new ArrayList<>();
-                        names.add("abc");
-                        // No cast needed on the output!
-                        assert(names.get(0).equals("abc"));
-
-                        // Fail on compile time.
-                        //names.add(1);
-                        //names.add((String)1);
-
-                        boolean fail = false;
-                        try {
-                            // Compiles, but we've asked for trouble with a double cast.
-                            // And now the exception happens before insertion, not after retrival.
-                            names.add((String)(Object)1);
-                        } catch (ClassCastException e) {
-                            fail = true;
-                        }
-                        assert fail;
-                    }
-                }
-
-                /*
-                Primitive types cannot be passed as type arguments.
-
-                What happens in most cases is that primitive wrappers are used instead,
-                and boxing and unboxing conversions produce the eye candy.
-                */
-                {
-                    // ERROR: unexpected type.
-                    //LinkedList<int> l;
-
-                    LinkedList<Integer> m;
-                }
-
-                /*
-                # Generic method
-                */
-                {
-                    Object o = new Object();
-                    assert Main.<Object>genericMethod(o) == o;
-
-                    // In this case however the type can be inferred from the argument.
-                    assert genericMethod(o) == o;
-
-                    /*
-                    If you want to pass the type parameter explicitly,
-                    you need to add explicitly:
-
-                    - the name of the class for static methods
-                    - `this.<T>method()` for instance methods
-                    */
-                    {
-                        // ERROR
-                        //.<Object>genericMethod(o);
-                        //<Object>genericMethod(o);
-                    }
-                }
-
-                // Impossible stuff wigh generics.
-                {
-                    /*
-                    # Call constructor of generic type
-
-                    # Instantiate generic type
-
-                        Not possible without reflection:
-                        http://stackoverflow.com/questions/75175/create-instance-of-generic-type-in-java
-                    */
-                    {
-                        //Integer i = genericGetInstance();
-                    }
-
-                    /*
-                    # Use .class on generic
-
-                        Not possible because of type erasure.
-
-                        http://stackoverflow.com/questions/18255117/how-do-i-get-the-class-attribute-from-a-generic-type-parameter
-                    */
-                    {
-                        //assert Main.<Object>genericGetClassDotClass() == Object.class;
-                    }
-
-                    // Use generics with static members.
-                    {
-                        // As a consequence, you must access static members without the generic parameters:
-
-                        // ERROR: Not a statement.
-                        //assert GenericStatic<Integer>.i == 0;
-
-                        assert GenericStatic.i == 0;
-                    }
-                }
-
-                /*
-                # Type inference for generics
-
-                # <>
-
-                # Diamond
-
-                    Java 7 Coin Project feature.
-
-                    Java can sometimes infer types, and in that case you can simply write TODO check:
-
-                    - `<>` for the type parameters of constructors
-                    - nothing for method calls
-
-                    The rules of type inference are complex and described at:
-                    http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12
-
-                    There have been considerable changes in Java 8.
-                */
-                {
-                    // Generic class.
-                    {
-                        // Infer type from argument.
-                        assert genericGetClass(new Object()).equals("Object");
-
-                        // Infer type from return value. TODO
-                        genericMethodGenericArgument(new ArrayList<>());
-
-                        /*
-                        Return value to method call inference did not work in Java 7,
-                        likely because of the complication that methods can be overloaded.
-                        This has changed in Java 8.
-                        http://stackoverflow.com/questions/15435747/java-7-generics-type-inference
-                        */
-
-                        // Does not work with anonymous subclasses.
-                        //http://stackoverflow.com/questions/9773733/double-brace-initialisation-anonymous-inner-class-with-diamond-operator
-                    }
-                }
-
-                /*
-                # Type erasure
-
-                    Compiled bytecode does not contain any special instructions for it.
-
-                    Wildcards are simply compiled to the most base possible type:
-                    e.g. `List<? extends Number>#get()` compiles to `(Number)List#get`.
-
-                    http://docs.oracle.com/javase/tutorial/java/generics/erasure.html
-
-                    TODO
-
-                # Reified generics
-
-                    http://stackoverflow.com/questions/879855/what-are-reified-generics-how-do-they-solve-the-type-erasure-problem-and-why-ca
-
-                    A feature which is not part of the language, but would allow for more flexible generics.
-                */
-
-                /*
-                Generics and instanceof
-                */
-                {
-                    ArrayList<String> s = new ArrayList<>();
-
-                    assert s instanceof ArrayList;
-
-                    // ERROR. Makes no sense: generics don't generate actual new types:
-                    // only a bunch of automatic typechecks on `.add()`, .get()`, etc.
-                    //assert s instanceof ArrayList<String>;
-                }
-
-                /*
-                # Unbounded wildcard
-
-                # <?>
-
-                    http://docs.oracle.com/javase/tutorial/java/generics/unboundedWildcards.html
-
-                    Applications:
-
-                    - ignore the type
-                    - something that extends from Object, since very class does so.
-
-                    TODO examples.
-                */
-                {
-                }
-
-                /*
-                Generics and typecasts
-                */
-                {
-                    ArrayList<String> s = new ArrayList<>();
-                    ArrayList<Integer> i = new ArrayList<>();
-                    ArrayList<Number> n = new ArrayList<>();
-                    //s = i;
-                    //i = n;
-                    //n = i;
-                    //n = (ArrayList<Number>)i;
                 }
             }
 
@@ -2923,62 +2658,6 @@ public class Main {
                         Otherwise, polymorphism wouldn't work.
                     */
                 }
-            }
-
-            /*
-            # Constructor
-
-                JLS7 8.8
-
-                Cannot be `abstract`, `static`, `final`, `native`,
-                `strictfp`, or `synchronized`.
-
-                Can however be `private` to prevent object construction,
-                e.g. in static utility classes.
-            */
-            {
-                /*
-                # Default constructor
-
-                    Constructor automatically defined if you don't define any other constructor.
-
-                    Sets all fields to their default values.
-                */
-                {
-                    class Class {
-                        Class(int i) {}
-                    }
-                    // ERROR
-                    //new Class();
-
-                    // TODO: is an empty constructor equivalent to the default constructor?
-                }
-
-                /*
-                # Method with the same name as the constructor
-
-                    Horrendous, but valid.
-
-                    A constructor is only considered if there is no return value.
-                */
-                {
-                    class Class {
-                        int i;
-                        Class(int i) { this.i = i; }
-                        int Class() { return this.i; }
-                    }
-                    assert new Class(1).Class() == 1;
-                }
-
-                /*
-                # Constructor inheritance
-
-                    Does not exist. You have to duplicate code:
-                    http://stackoverflow.com/questions/1644317/java-constructor-inheritance
-
-                    Likely rationale: otherwise all classes would have an empty constructor
-                    derived from `Object`, and it does not make much sense to many classes.
-                */
             }
 
             /*
@@ -3932,312 +3611,6 @@ public class Main {
             */
         }
 
-        /*
-        # null
-
-            http://stackoverflow.com/questions/2707322/what-is-null-in-java
-
-            Has explicit bytecode support via the `aconst_null` and `ifnull` instructions.
-        */
-        {
-            // Objects that are not explicitly initialized are initialized to `null`.
-            assert publicStaticString == null;
-
-            // Initialized objects are never null
-            assert new Object() != null;
-
-            /*
-            # NullPointerException
-
-                What you get for attempting to dereference a `null`.
-
-                Exists at the bytecode level: `invoke` instructions are documented to raise it.
-            */
-            {
-                String s = null;
-                boolean fail = false;
-                try {
-                    s.toLowerCase();
-                } catch (NullPointerException e) {
-                    assert e.getClass() == NullPointerException.class;
-                    fail = true;
-                }
-                assert fail;
-            }
-        }
-
-        /*
-        # Array
-
-            JLS7 10
-
-            Arrays are built-in into the language.
-            Therefore, there is no Javadoc which documents them:
-            you have to read the JLS.
-
-            Arrays do however have class-like semantics.
-
-            Arrays are not Generics nor do they implement Collection.
-
-            Arrays have fixed size. Use `ArrayList` for variable size arrays.
-
-            Do not confuse arrays with the Array class:
-            http://docs.oracle.com/javase/7/docs/api/java/lang/reflect/Array.html
-            which just contains some convenience methods to work with arrays.
-
-            Java bytecode has various array-specific instructions such as
-            `newarray`, `arraylength`, `iastore`, etc.
-        */
-        {
-            // # Declare arrays
-            {
-                /*
-                Putting `[]` after `is` exactly the same as before.
-
-                I find after bad style since it splits type infomation appart:
-                type is `int[]`, not `int`.
-
-                Can even use both?
-                */
-                {
-                    int[] is;
-                    int js[];
-                    int[] ks[];
-                }
-            }
-
-            // # Create arrays
-            {
-                // Create and declare at once vs separately
-                {
-                    // At once
-                    {
-                        int[] is = new int[3];
-                        assert is[0] == 0;
-                        assert is[1] == 0;
-                        assert is[2] == 0;
-                    }
-
-                    // Separately
-                    {
-                        int[] is;
-                        is = new int[3];
-                        assert is[0] == 0;
-                        assert is[1] == 0;
-                        assert is[2] == 0;
-                    }
-                }
-
-                /*
-                # Maximum Array size
-
-                    MAX_INT: <http://stackoverflow.com/questions/3038392/do-java-arrays-have-a-maximum-size>
-                */
-                {
-                    // ERROR: Incompatible types: conversion from long to int.
-                    //byte[] bytes = new byte[0xFFFF_FFFF_1L];
-                }
-
-                // Primitives vs objects
-                {
-                    // Primitives
-                    {
-                        int[] is = new int[2];
-                        is[0] = 0;
-                        is[1] = 1;
-                        assert is[0] == 0;
-                        assert is[1] == 1;
-                    }
-
-                    // Objects
-                    {
-                        Integer[] is = new Integer[2];
-                        is[0] = 0;
-                        is[1] = 1;
-                        assert is[0] == 0;
-                        assert is[1] == 1;
-                    }
-                }
-
-                // Initialization values
-                {
-                    // Default values if none given.
-                    {
-                        // Primitives
-                        {
-                            int[] is = new int[2];
-                            assert is[0] == 0;
-                            assert is[1] == 0;
-                        }
-
-                        // Objects
-                        {
-                            String[] ss = new String[2];
-                            assert ss[0] == null;
-                            assert ss[1] == null;
-                        }
-                    }
-
-                    // Custom values
-                    {
-                        // Long syntax
-                        {
-                            // Good
-                            {
-                                int[] is = new int[]{0, 1};
-                                assert is[0] == 0;
-                                assert is[1] == 1;
-                            }
-
-                            // This is how you create arrays on the fly for functions.
-                            {
-                                assert arrayParam(new int[]{1, 2}) == 3;
-                            }
-
-                            // Bad: cannot have the size and be inialized at once.
-                            //int[] is = new int[2]{0, 1};
-                        }
-
-                        // Shorthand syntax
-                        {
-                            // Good
-                            {
-                                int[] is = {0, 1};
-                                assert is[0] == 0;
-                                assert is[1] == 1;
-                            }
-
-                            // Bad: must be used for explicit declaration / initialization.
-                            //assert {0, 1}[1] == 1;
-                        }
-
-                        // Array with n equal values
-                        {
-                            // Objects: Collections.nCopies().toArray();
-
-                            // Primitives: don't know.
-                        }
-                    }
-                }
-            }
-
-            /*
-            # Arrays look like classes
-
-                But they are not classes. It's just JLS magic.
-
-                http://docs.oracle.com/javase/7/docs/api/java/lang/reflect/Array.html
-            */
-            {
-                // .class works on them
-                {
-                    int[] is = new int[3];
-
-                    assert is.getClass() == int[].class;
-                    assert int[].class.getSuperclass() == Object.class;
-                }
-
-                /*
-                JLS7 5.1.6 says that arrays can be converted to Serializable and Cloneable.
-
-                This means that arrays behave as if they implement those interfaces,
-                which are therefore magic.
-                */
-
-                /*
-                # Iterate array
-
-                    Arrays don't implement iterable since they are not regular objects,
-                    but the enthanced for loop (`:`) works magically for them as well.
-
-                    http://docs.oracle.com/javase/specs/jls/se7/html/jls-14.html#jls-14.14.2
-                    says that the "Expression must be Iterable or an array type".
-                */
-                {
-                    ArrayList<Integer> a = new ArrayList<>();
-                    ArrayList<Integer> a2 = new ArrayList<>();
-                    a.add(1);
-                    a.add(2);
-                    for (int i : a)
-                        a2.add(i);
-                    assert a.equals(a2);
-                }
-            }
-
-            /*
-            # length of Array
-
-                Unlike C, arrays are classes and have a length field.
-
-                This field is not a regular field access:
-                it generates a special `arraylength` JVM instruction.
-            */
-            {
-                int[] is = new int[3];
-                assert is.length == 3;
-            }
-
-            /*
-            # ArrayIndexOutOfBoundsException
-
-            # Bound checking
-
-                Unlike in C, Java checks bounds and raises nice exceptions
-                instead of allowing arbitray code execution vulnerabilities :)
-            */
-            {
-                int[] is = new int[3];
-                try {
-                    assert is[3] == 0;
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    System.out.println(
-                        "ArrayIndexOutOfBoundsException.getMessage() = "
-                        + e.getMessage()
-                    );
-                }
-            }
-
-            /*
-            # range
-
-                No built-in equivalent of python `range()` in Java 7:
-                <http://stackoverflow.com/questions/3790142/java-equivalent-of-pythons-rangeint-int>
-
-                Just use a for loop instead.
-
-                Possible in Guava, and with Java 8 `IntStream.range`.
-            */
-            {
-                Integer[] ints = new Integer[10];
-                for (int i = 0; i < 10; i++) {
-                    ints[i] = new Integer(i);
-                }
-            }
-
-            /*
-            # clone arrays
-
-                On arrays, `.clone()`, `Arrays.copyOf` and
-                `System.arrayCopy` are all the same, shallow, copies.
-
-                Arrays are the only place where `.clone()` works well.
-                So better avoid it and go ti `Arrays.copyOf`.
-
-                The main problem with `Arrays.copyOf` is that its clumsy interface
-                takes the length as a parameter requiring extra typing for
-                full array copies.
-
-                Arrays does not provide a multi-dimensional deep copy, only shallow:
-                <http://stackoverflow.com/questions/1564832/how-do-i-do-a-deep-copy-of-a-2d-array-in-java>
-                This could be expected since it does have some deep array-only methods like `deepEquals`.
-            */
-            {
-                int[] is = new int[]{0, 1};
-                int[] js = is.clone();
-                assert(is != js);
-                assert(Arrays.equals(is, js));
-            }
-        }
 
         /*
         # Command line arguments
@@ -4811,358 +4184,11 @@ public class Main {
             */
 
             /*
-            # Collection
-
-                Important interface that has methods like `add`, `remove`, `equals` and `size`.
-
-                <http://docs.oracle.com/javase/7/docs/api/java/util/Collection.html>
-
-                Superinterface: `Iterable`.
-
-                Notable subinterfaces: `List`, `Set`.
-
-                Does not specify if ordered or unordered.
-
-                Array does not implement `Collection`.
-
-                Collection seems to be a well known non-Java specific computer science term:
-                <http://en.wikipedia.org/wiki/Collection_%28abstract_data_type%29>
-
-            # Collections vs arrays
-
-                Arrays are a Java feature like primitives,
-                that exists only to allow writing faster code
-                by mapping directly to hardware representations.
-
-                The tradeoff is that the array API is uglier and less flexible.
-
-                If you are not super concerned about speed, use collections by default.
-
-                <http://stackoverflow.com/questions/6100148/collection-interface-vs-arrays>
-            */
-            {
-                /*
-                # add Collection
-
-                    Ensures that the collection contains the element.
-
-                    Since collections can be either ordered or not,
-                    this does not necessarily insert at the beginning or end.
-
-                    Subinterfaces may specify that. E.g., `List` is ordered,
-                    and List#add` always adds to the end of the list.
-                */
-
-                /*
-                # Initialize collection
-
-                    <http://stackoverflow.com/questions/1005073/initialization-of-an-arraylist-in-one-line>
-
-                    There is no simple one liner to initialize a collection with given values.
-
-                    The best way is likely to `add` them one by one.
-
-                    A slightly less verbose possibility is the "double brace initialization idiom".
-                */
-                {
-                    /*
-                    # Double brace initialization idiom
-
-                        Creates an anonymous inner class,
-                        and adds an instance initializer to it.
-
-                        Downside: for classes that implement serializable,
-                        you need to add an explicit serialVersionUID or you will get a warning.
-                        TODO why?
-
-                        The main cause of this idiom is that `add`
-                        does not return the modified collection itself, so you cannot chain
-                        `add().add()` and pass the result to a method invocation.
-
-                        Even C++ is more convenient on this point, with its initializer lists.
-                    */
-                    {
-                        ArrayList<Integer> l = new ArrayList<Integer>() {
-                            private static final long serialVersionUID = 1L;
-                            {
-                                add(0);
-                                add(1);
-                            }
-                        };
-                        ArrayList<Integer> l2 = new ArrayList<>();
-                        l2.add(0);
-                        l2.add(1);
-                        assert l.equals(l2);
-
-                        /*
-                        If are fine with an immutable collections, see
-                        `Collections` `singletonXXX()`, `emptyXXX` families and `nCopies.
-                        */
-
-                        /*
-                        `Arrays.asList()` is a possibility
-                        is you want multiple different elements and but are fine with fixed size.
-                        */
-                    }
-                }
-
-                /*
-                # toArray
-
-                    Creates a new array.
-                */
-                {
-                    Collection<Integer> l = new ArrayList<>();
-                    l.add(0);
-                    l.add(1);
-                    l.add(2);
-                    assert Arrays.equals(l.toArray(), new Integer[]{0, 1, 2});
-                }
-
-                /*
-                # equals Collection
-
-                    Does not specify anything about the semantics besides Object's contract.
-
-                    Inheriting interfaces however do.
-                    Notably, `List` and `Set` say that their comparison
-                    must be based on the `equals` of the contained elements.
-                */
-
-                /*
-                # List
-
-                    Interface: https://docs.oracle.com/javase/7/docs/api/java/util/List.html
-
-                    Superinterface: Collection.
-
-                    The most important difference between `List` and `Collection`
-                    is that `List` is ordered and `Iterable`.
-
-                    Most common implementations:
-
-                    - `LinkedList`
-                    - `ArrayList`
-
-                    List basically only contains operations that `ArrayList`, can do well.
-                */
-                {
-                    /*
-                    # equals (List)
-
-                        Unlike Collection#equals, asserts that both lists have the same elements (a.equals(b))
-                        and are in the same order.
-                    */
-                    {
-                        List<Integer> l = new LinkedList<>();
-                        l.add(1);
-                        l.add(2);
-                        List<Integer> l2 = new LinkedList<>();
-                        l2.add(1);
-                        l2.add(2);
-                        List<Integer> l3 = new LinkedList<>();
-                        l3.add(2);
-                        l3.add(1);
-                        assert  l.equals(l2);
-                        assert !l.equals(l3);
-                    }
-
-                    /*
-                    # indexOf
-
-                    # lastIndexOf
-
-                        Strings also have a version to search starting from a given index.
-
-                        `Arrays` don't have a direct method, so just `Arrays.asList().indexOf()` it.
-                        <http://stackoverflow.com/questions/4962361/where-is-javas-array-indexof>
-                    */
-                    {
-                        List<Integer> l = new ArrayList<>();
-                        l.add(0);
-                        l.add(1);
-                        l.add(0);
-                        l.add(1);
-                        l.add(0);
-                        l.add(1);
-                        l.add(0);
-                        assert l.indexOf(1) == 1;
-                        assert l.lastIndexOf(1) == 5;
-                    }
-
-                    /*
-                    # LinkedList
-
-                        Implements `List`, `Deque` and `Queue`.
-
-                        The list is doubly linked.
-
-                        https://docs.oracle.com/javase/7/docs/api/java/util/LinkedList.html
-
-                    # Deque
-
-                        Supports operations on both ends of the queue.
-                    */
-                    {
-                        Deque<Integer> l = new LinkedList<>();
-                        l.add(1);
-                        l.add(2);
-                        assert l.size() == 2;
-                        assert l.pop() == 1;
-                        assert l.size() == 1;
-                    }
-
-                    /*
-                    # ArrayList
-
-                        Implements `List`.
-
-                        List basically only contains operations which `ArrayList` can do efficiently.
-
-                        Other operations that would require array rotation are in other interfaces
-                        like Deque and Queue.
-
-                        Dynamically allocated array-backed list.
-
-                        https://docs.oracle.com/javase/7/docs/api/java/util/ArrayList.html
-
-                    # Vector
-
-                        Similar to ArrayList but synchronized.
-                    */
-                    {
-                        ArrayList<Integer> l = new ArrayList<>();
-                        l.add(1);
-                        l.add(3);
-                        assert l.size() == 2;
-
-                        // ERROR: cannot find symbol.
-                        // TODO why no `pop`?
-                        //assert l.pop() == 2;
-                    }
-
-                    /*
-                    # Stack
-
-                        http://docs.oracle.com/javase/7/docs/api/java/util/Stack.html
-
-                        Derived from Vector, thus synchronized.
-
-                        If you want a regular stack, just use `LinkedList`.
-                    */
-                    {
-                        Stack<Integer> s = new Stack<>();
-                        s.add(1);
-                        s.add(2);
-                    }
-                }
-            }
-
-            /*
-            # Collections
-
-                Static methods that do operations on classes that implement `Collection`.
-
-                <http://docs.oracle.com/javase/7/docs/api/java/util/Collections.html>
-
-                Some methods however require subintefaces of `Collection`, e.g. `sort` requires `List`,
-                because `Collections` are not necessarily ordered, but `List` is.
-            */
-            {
-                /*
-                # sort Collections
-
-                    Sort a collection inplace.
-
-                    It's contents must implement `Comparable`.
-
-                    The Javadoc says it's a mergesort similar to Python's.
-                */
-                {
-                    List<Integer> l = new ArrayList<>();
-                    l.add(2);
-                    l.add(0);
-                    l.add(1);
-                    List<Integer> l2 = new ArrayList<>();
-                    l2.add(0);
-                    l2.add(1);
-                    l2.add(2);
-                    // Returns void
-                    Collections.sort(l);
-                    assert l.equals(l2);
-                }
-
-                /*
-                # unmodifiableCollection
-
-                # unmodifiableSet
-
-                # unmodifiableMap
-
-                # unmodifiableList
-
-                    As of JDK9, those methods are implemented by returning private inner classes
-                    that override the modifier methods to throw and exception:
-                    http://hg.openjdk.java.net/jdk9/jdk9/jdk/file/f08705540498/src/java.base/share/classes/java/util/Collections.java#l4746
-
-                    # TODO how exactly does that work, considering that it just returns a List?
-
-                        Is there a UnmodifiableList class, or is it just some private implementation of it that gets returned?
-
-                        Note that `Collections#unmodifiableCollection` gives you an unmodifiable collection.
-
-                        Guava however does seem to have public immutable collections:
-                        <http://stackoverflow.com/questions/5611324/whats-the-difference-between-collections-unmodifiableset-and-immutableset-of>
-                */
-                {
-                    Collection<Integer> c = new ArrayList<>();
-                    Collection<Integer> c2 = Collections.unmodifiableCollection(c);
-                    boolean fail = false;
-                    try {
-                        c2.add(1);
-                    } catch(UnsupportedOperationException e) {
-                        fail = true;
-                    }
-                    assert fail;
-                }
-
-                /*
-                # emptySet
-
-                # emptyList
-
-                # emptyMap
-
-                # singleton
-
-                # singletonList
-
-                # singletonMap
-
-                    Create immutable collections that contain one or 0 elements.
-
-                    TODO what is the main application? Just reducing the abilities of the method that gets called?
-                    <http://stackoverflow.com/questions/4801794/use-of-javas-collections-singletonlist>
-
-
-                # nCopies
-
-                    ImmutablelList with n copies of a given reference.
-
-                    All elements are a single reference.
-
-                    Only works for objects.
-                */
-                {
-                }
-            }
-
-            /*
             # Arrays class
 
                 Convenience static utilities for Arrays.
 
-                <http://docs.oracle.com/javase/7/docs/api/java/util/Arrays.html>
+                http://docs.oracle.com/javase/7/docs/api/java/util/Arrays.html
             */
             {
                 /*
@@ -5362,101 +4388,11 @@ public class Main {
             }
 
             /*
-            # Map
-
-                Interface.
-
-                Major implementations include `HashMap` and `TreeMap`,
-                both of which inherit `AbstractMap`.
-
-                Not a collection:
-                http://stackoverflow.com/questions/2651819/why-doesnt-java-map-extends-collection
-
-            # TreeMap
-
-                Implements `Map`.
-
-                Javadoc says it's a red-black tree.
-
-                You can use a custom comparator to compare the entries without wrapping the key.
-
-            # HashMap
-
-                Implements `Map`.
-
-                You cannot use a custom hash function without wrapping the key:
-                http://stackoverflow.com/questions/5453226/java-need-a-hash-map-where-one-supplies-a-function-todo-the-hashing
-
-            # HashTable
-
-                Like `HashMap` but synchronized.
-
-            # EnumMap
-
-                Only for enum keys.
-
-                TODO why is it faster?
-            */
-            {
-                // Basic usage.
-                {
-                    Map<Integer,String> m = new TreeMap<>();
-                    m.put(0, "zero");
-                    m.put(1, "one");
-                    assert m.get(0).equals("zero");
-                    assert m.get(1).equals("one");
-                    assert m.get(2) == null;
-                }
-
-                /*
-                # put
-
-                    Returns the previous value for the key, null if none.
-                */
-                {
-                    Map<Integer,Integer> m = new TreeMap<>();
-                    assert(m.put(0, 0) == null);
-                    assert(m.put(0, 1).equals(0));
-                    assert(m.put(0, 2).equals(1));
-                    //assert(m.put(1, 1).equals(1));
-                }
-
-                /*
-                # entrySet
-
-                # Iterate over map
-
-                    http://stackoverflow.com/questions/46898/iterate-over-each-entry-in-a-map
-
-                    In Java 8, there is also the `forEach` loop version.
-                */
-                {
-                    //for (Map.Entry<String, String> entry : map.entrySet()) {
-                        //System.out.println(entry.getKey() + "/" + entry.getValue());
-                    //}
-                }
-
-                /*
-                # values
-
-                    Collection of the values. Not a copy.
-
-                    Not a set because there can be duplicates.
-                */
-
-                /*
-                # keySet
-
-                    Set of all the keys.
-                */
-            }
-
-            /*
             # Set
 
                 Interface. Major implementations include `HashSet`, `TreeSet`, `EnumSet`.
 
-                <http://docs.oracle.com/javase/7/docs/api/java/util/Set.html>
+                http://docs.oracle.com/javase/7/docs/api/java/util/Set.html
             */
             {
             }
@@ -5644,10 +4580,10 @@ public class Main {
                         System.out.println("  java.version = " + System.getProperty("java.version"));
                     }
 
-                    // Custom properties can be passed to the JVM with `-D'custom.property=value'
+                    // Custom properties can be passed to the JVM with `java -D'custom.property=value'
                     {
-                        System.out.println("System.getProperty(\"custom.property\") = " +
-                                            System.getProperty("custom.property"));
+                        //System.out.println("System.getProperty(\"custom.property\") = " +
+                                            //System.getProperty("custom.property"));
                     }
                 }
 
@@ -6702,7 +5638,6 @@ public class Main {
         # exit status
         */
         {
-            System.out.println("ALL ASSERTS PASSED");
             System.exit(0);
             System.exit(1);
         }

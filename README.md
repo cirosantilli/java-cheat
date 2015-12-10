@@ -4,12 +4,23 @@ Java minimal examples. Asserts used wherever possible.
 
 1.  [Getting started](getting-started.md)
 1.  Code
-    1. [Main.java](Main.java): main Java 7 cheat
-    1. [HelloWorld.java](HelloWorld.java)
-    1. [Binary compatibility](binary-compatibility/)
-    1. [ClassNotFoundException](class-not-found/)
-    1. [JNI](jni/)
-    1. [WatchService](watch-service/)
+    1.  [Main.java](Main.java)
+    1.  [Hello world](HelloWorld.java)
+    1.  Language
+        1.  Types
+        1.      [Array](ArrayCheat.java)
+        1.  [Constructor](ConstructorCheat.java)
+        1.  [Generics](GenericsCheat.java)
+    1.  Standard library
+        1.  [Collection](CollectionCheat.java)
+            1.  [Collections](CollectionsCheat.java)
+            1.  [List](ListCheat.java)
+            1.  [Map](MapCheat.java)
+    1.  [interactive](interactive/)
+    1.  [Binary compatibility](binary-compatibility/)
+    1.  [ClassNotFoundException](class-not-found/)
+    1.  [JNI](jni/)
+    1.  [WatchService](watch-service/)
 1.  Introduction
     1.  [Standards](standards.md)
         1. [Versions](versions.md)

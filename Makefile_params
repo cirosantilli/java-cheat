@@ -1,2 +1,0 @@
-ARGS := arg0 arg1
-OUT_DIR := ./target/
