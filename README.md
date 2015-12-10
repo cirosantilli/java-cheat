@@ -1,5 +1,7 @@
 # Java Cheat ![logo](logo.png)
 
+[![Build Status](https://travis-ci.org/cirosantilli/java-cheat.svg)](https://travis-ci.org/cirosantilli/java-cheat)
+
 Java minimal examples. Asserts used wherever possible.
 
 1.  [Getting started](getting-started.md)
