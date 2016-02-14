@@ -24,8 +24,20 @@ Touches internals of how Java works. TODO how stable is this? Across minors (Jav
 
 What happens if the JVM cannot find the definition of a `native` method.
 
-## JNA
+## Underscore in package name
+
+Should be translated to `_1` on C method: <http://stackoverflow.com/a/35015592/895245>
+
+## Alternatives
+
+### JNA
 
 Popular alternative, that does not require you to write any C code: <https://github.com/twall/jna>
 
 Vs: <http://stackoverflow.com/questions/1556421/use-jni-instead-of-jna-to-call-native-code>
+
+### SWIG
+
+<http://www.swig.org/>
+
+Also supports many other languages.

@@ -14,6 +14,10 @@ public class Main {
     public native String stringMethod(String text);
 
     public static void main(String[] args) {
+        /*
+        Looks for file: "${java.library.path}/libMain.so".
+        Main class is loaded from there.
+        */
         System.loadLibrary("Main");
         Main m = new Main();
         assert(m.intMethod(2) == 4);

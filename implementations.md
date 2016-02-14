@@ -16,6 +16,14 @@ It seems that in 2006 all Java code was opened under a modified GNU license and 
 
 To run Java apps on your browser you also need the Java plugin for your browser. IcedTea is a popular open source project that implements that integration: <http://en.wikipedia.org/wiki/IcedTea>
 
+## Harmony
+
+<https://en.wikipedia.org/wiki/Apache_Harmony>
+
+Retired in 2011.
+
+Google used it in Android until 4.4, when it moved to OpenJDK.
+
 ## Oracle implementations
 
 Oracle has bought at HotSpot and JRockit with other companies. <http://stackoverflow.com/questions/8068717/jrockit-jvm-versus-hotspot-jvm>

@@ -55,5 +55,24 @@ public class ConstructorCheat {
             Likely rationale: otherwise all classes would have an empty constructor
             derived from `Object`, and it does not make much sense to many classes.
         */
+        {
+            class Base {
+                public int i;
+                Base(int i) { this.i = i; }
+            }
+
+            // ERROR: would generate only the default constructor,
+            // which calls super(), which does not exist.
+            //class Class extends Base {}
+
+            // OK.
+            class Class extends Base {
+                Class(int i) {
+                    super(i);
+                }
+            }
+
+            assert new Class(1).i == 1;
+        }
     }
 }
