@@ -40,10 +40,12 @@ public class IntegerPoolCheat {
 
         // Integer
         {
+            assert new Integer(1) != new Integer(1);
+
             assert Integer.valueOf(127) == Integer.valueOf(127);
             assert Integer.valueOf(128) != Integer.valueOf(128);
 
-            // Same as above.
+            // Same as above. Compiled bytecode uses `Integer.valueOf`.
             {
                 Integer i1 = 127;
                 Integer i2 = 127;
@@ -57,6 +59,11 @@ public class IntegerPoolCheat {
 
             // New raw objects however are different as usual.
             assert new Integer(127) != new Integer(127);
+
+            // There is a documentation bug, but `valueOf(String)` also uses the Integer pool, not new:
+            //http://stackoverflow.com/questions/508665/difference-between-parseint-and-valueof-in-java
+            assert Integer.valueOf("127") == Integer.valueOf("127");
+            assert Integer.valueOf("128") != Integer.valueOf("128");
         }
     }
 }
