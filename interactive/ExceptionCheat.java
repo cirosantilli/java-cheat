@@ -4,7 +4,7 @@ and gets forwarded across a method chain.
 
 Too long to assert.
 */
-public class ExceptionTest {
+public class ExceptionCheat {
     static void f5() { throw null; }
     static void f4() {
         try {

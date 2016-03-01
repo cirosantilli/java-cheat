@@ -22,6 +22,8 @@ Java minimal examples. Asserts used wherever possible.
             1.  [List](ListCheat.java)
             1.  [Map](MapCheat.java)
         1.  [StringBuilder](StringBuilderCheat.java)
+        1.  Streams
+            1. [BufferedReader](BufferedReaderCheat.java)
         1.  lang
             1.  [String](StringCheat.java)
             1.  [Wrappers](WrappersCheat.java)

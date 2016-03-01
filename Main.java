@@ -97,7 +97,6 @@ they cannot be deterministically checked.
         TODO what are all reserved package names?
 */
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -3668,7 +3667,7 @@ public class Main {
             /*
             # System
 
-                <http://docs.oracle.com/javase/7/docs/api/java/lang/System.html>
+                http://docs.oracle.com/javase/7/docs/api/java/lang/System.html
 
                 Cannot be instanciated since no public constructor.
             */
@@ -4126,30 +4125,23 @@ public class Main {
                 Stream family:
 
                 -   OutputStream
-
                     -   FileOutputStream
                     -   PrintStream
                     -   ByteArrayOutputStream
                     -   DataOutputStream
-
                 -   InputStream
-
                     - FileInputStream
 
                 Reader / writer family:
 
                 -   Writer
-
                     -   PrintWritter
                     -   StringWritter
-
                 -   Reader
-
                     -   BufferedReader
-
                     -   InputStreamReader
-
                         -   FileReader
+                    -   StringReader
 
                 Other families:
 
@@ -4472,52 +4464,6 @@ public class Main {
                     String backed writter.
                 */
                 {
-                }
-
-                /*
-                # BufferedReader
-
-                    Automagically prefetches reads larger chunks than immediately required.
-
-                    Faster than a non-buffered reader if you are going to read the whole file anyways.
-
-                    <http://docs.oracle.com/javase/7/docs/api/java/io/BufferedReader.html>
-
-                    Is itself a reader, and simply acts as a wraper around another `Reader`:
-                    http://docs.oracle.com/javase/7/docs/api/java/io/Reader.html
-
-                    The most common reader to use wrap around is `FileReader`.
-                */
-                {
-                    /*
-                    # Read file line-by-line
-
-                    # readLine
-
-                        A line is considered to be terminated by any one of a line feed ('\n'),
-                        a carriage return ('\r'), or a carriage return followed immediately by a linefeed.
-
-                        Using BufferedReader + FileReader is the most common combo.
-
-                        Readers must be used instead of the stream because this operation
-                        is encoding dependant.
-                    */
-                    File f = File.createTempFile("aaa", null);
-                    BufferedReader br = new BufferedReader(new FileReader(f));
-                    for (String line; (line = br.readLine()) != null;) {
-                        // process the line.
-                    }
-
-                    // Another possibility. Worse because scope of `line` leaks out.
-                    //String line;
-                    //while ((line = br.readLine()) != null) {}
-
-                    /*
-                    Check if reader is at EOF: not possible without reading.
-                    <http://stackoverflow.com/questions/3714090/how-to-see-if-a-reader-is-at-eof>
-                    */
-
-                    f.delete();
                 }
             }
 
