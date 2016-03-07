@@ -17,29 +17,24 @@ public class ServerSocketCheat {
         final int port = 12345;
         ServerSocket listener = new ServerSocket(port);
         System.out.printf("listening on port %d%n", port);
-        try {
-            while (true) {
-                System.out.println("waiting for client");
-                Socket socket = listener.accept();
-                System.out.printf("client connected from: %s%n", socket.getRemoteSocketAddress().toString());
-                try {
-                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    PrintStream out = new PrintStream(socket.getOutputStream());
-                    for (String inputLine; (inputLine = in.readLine()) != null;) {
-                        System.out.println("received:");
-                        System.out.println(inputLine);
-                        StringBuilder outputStringBuilder = new StringBuilder("");
-                        char inputLineChars[] = inputLine.toCharArray();
-                        for (char c : inputLineChars)
-                            outputStringBuilder.append(Character.toChars(c + 1));
-                        out.println(outputStringBuilder);
-                    }
-                } finally {
-                    socket.close();
-                }
+        while (true) {
+            System.out.println("waiting for client");
+            Socket socket = listener.accept();
+            System.out.printf("client connected from: %s%n", socket.getRemoteSocketAddress().toString());
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintStream out = new PrintStream(socket.getOutputStream());
+            for (String inputLine; (inputLine = in.readLine()) != null;) {
+                System.out.println("received:");
+                System.out.println(inputLine);
+                StringBuilder outputStringBuilder = new StringBuilder("");
+                char inputLineChars[] = inputLine.toCharArray();
+                for (char c : inputLineChars)
+                    outputStringBuilder.append(Character.toChars(c + 1));
+                out.println(outputStringBuilder);
             }
-        } finally {
-            listener.close();
+            socket.close();
         }
+        // Unreachable: user must Ctrl + C to exit.
+        //listener.close();
     }
 }

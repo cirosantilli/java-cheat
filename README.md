@@ -16,6 +16,8 @@ Java minimal examples. Asserts used wherever possible.
                 1.  [super](SuperCheat.java)
                 1.  [Nested class](NestedClassCheat.java)
             1.  [Generics](GenericsCheat.java)
+        1.  Branching
+            1.  [Exceptions](ExceptionCheat.java)
     1.  Standard library
         1.  [Collection](CollectionCheat.java)
             1.  [Collections](CollectionsCheat.java)
