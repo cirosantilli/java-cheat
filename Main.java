@@ -3458,11 +3458,13 @@ public class Main {
                     and can only do byte operations.
 
                     You need a decorator like a Scanner to read formatted data like integers.
+
+                    Read a line from it:
+                    http://stackoverflow.com/questions/5287538/how-can-i-get-the-user-input-in-java
                 */
                 {
                     System.out.println("stdout");
                     System.err.println("stderr");
-                    System.in.readLine("stderr");
                 }
 
                 /*
