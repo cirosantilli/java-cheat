@@ -108,6 +108,14 @@ Interface for debuggers to interact with the VM. All IDEs and JDB use it to impl
 
 C# has stdlib methods that put you into debug mode like `System.Diagnostics.Debugger.Launch()`, but Java does not seem to have an analogous method: <http://stackoverflow.com/questions/2840941/system-diagnostics-debugger-break-like-using-java>
 
+Apparently can used for code hotswap:
+
+- http://stackoverflow.com/questions/4553353/change-a-method-at-runtime-via-a-hot-swap-mechanism
+- http://programmers.stackexchange.com/questions/135350/how-to-debug-change-java-code-while-the-program-is-running
+- http://stackoverflow.com/questions/3981746/eclipse-editing-and-running-code-live
+- http://stackoverflow.com/questions/13000672/netbeans-live-realtime-update
+- https://www.youtube.com/watch?v=BES9EKK4Aw4 Coding with Notch (from Minecraft: The Story of Mojang)
+
 ## How to crash the JVM
 
 - <http://stackoverflow.com/questions/6470651/creating-a-memory-leak-with-java>

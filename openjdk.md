@@ -108,3 +108,5 @@ Create a new issue or feature request: <http://bugreport.java.com/submit_intro.d
 TODO how to browse the bugs? More bull****?
 
 TODO vs <https://bugs.openjdk.java.net>? On that site you need a login, and to get it you need Author status...
+
+<http://programmers.stackexchange.com/questions/216203/how-does-the-maintenance-of-openjdk-work-in-practice>
