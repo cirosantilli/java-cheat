@@ -50,6 +50,7 @@ A good way to learn bytecode is to generate it from assemblers: programs that ta
 
 There have been hardware implementations of the JVM:
 
+- <https://en.wikipedia.org/wiki/Jazelle>
 - <https://en.wikipedia.org/wiki/Java_processor>
 - <http://stackoverflow.com/questions/1383947/can-we-implement-a-java-interpreter-in-hardware-that-executes-java-bytecodes-nat>
 
