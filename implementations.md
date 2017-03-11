@@ -26,7 +26,10 @@ Google used it in Android until 4.4, when it moved to OpenJDK.
 
 ## Oracle implementations
 
-Oracle has bought at HotSpot and JRockit with other companies. <http://stackoverflow.com/questions/8068717/jrockit-jvm-versus-hotspot-jvm>
+Oracle has bought at HotSpot and JRockit from other companies , and HotSpot became the default implementation:
+
+- <http://stackoverflow.com/questions/8068717/jrockit-jvm-versus-hotspot-jvm>
+- <https://en.wikipedia.org/wiki/HotSpot>
 
 Oracle said that it is making an effort to make them converge.
 
