@@ -29,7 +29,7 @@ final public class Main {
         System.out.println(Sizeof.sizeof(new TwoInts()));
 
         class IntArray0 {
-            int[] i = new int[10];
+            int[] i = new int[0];
         }
         System.out.println("IntArray0");
         System.out.println(Sizeof.sizeof(new IntArray0()));
