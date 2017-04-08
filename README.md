@@ -35,7 +35,7 @@ Java minimal examples. Asserts used wherever possible.
     1.  [ClassNotFoundException](class-not-found/)
     1.  [JNI](jni/)
     1.  [WatchService](watch-service/)
-    1.  [instrument](instrumnt/)
+    1.  [instrument](instrument/)
 1.  Introduction
     1.  [Standards](standards.md)
         1. [Versions](versions.md)
