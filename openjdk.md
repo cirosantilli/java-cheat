@@ -30,6 +30,11 @@ TODO: `jdk8u60-b26` vs `jdk8-b27`? AKA http://hg.openjdk.java.net/jdk8u vs http:
 
 ## OpenJDK 8 source code
 
+- https://github.com/hgomez/obuildfactory
+- https://gfiber.googlesource.com/buildroot/+/master/package/openjdk-bin/openjdk-bin.mk
+- https://github.com/florian-gauvin/Buildroot-Openjdk/blob/f9962b187c71678dae0fcd7913876127b0b85a7d/package/openjdk/openjdk.mk
+- https://en.wikipedia.org/wiki/JamVM
+
 ### Clone and build
 
 Get sources:
@@ -49,14 +54,14 @@ Ubuntu 14.04 build dependencies (my printer stopped working afterwards...):
 Build everything with:
 
     bash configure
-    make
+    make -j $(nproc)
 
 Took 25 minutes on a mid range computer from 2012.
 
 `make help` teaches you more, e.g. how to build only certain parts of the JDK:
 
-    make hotspot
-    make jdk
+    make -j $(nproc) hotspot
+    make -j $(nproc) jdk
 
 Finally:
 

@@ -10,6 +10,8 @@ Java minimal examples. Asserts used wherever possible.
     1.  [Hello world](HelloWorld.java)
     1.  Language
         1.  Types
+            1.  Floating point
+                1. [NaN](Nan.java)
             1.  [Array](ArrayCheat.java)
             1.  Classes
                 1.  [Constructor](ConstructorCheat.java)
