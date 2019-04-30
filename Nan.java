@@ -6,40 +6,63 @@ import java.lang.Math;
 public class Nan {
     public static void main(String[] args) {
         // Generate some NaNs.
-        float nan = Float.NaN;
-        float zero_div = 0.0f / 0.0f;
-        float sqrt = (float)Math.sqrt(-1.0);
-        float inf_minus = Float.POSITIVE_INFINITY - Float.POSITIVE_INFINITY;
-        float inf_times = Float.POSITIVE_INFINITY * 0.0f;
-        float quiet_nan1 = Float.intBitsToFloat(0x7fc00001);
-        float quiet_nan2 = Float.intBitsToFloat(0x7fc00002);
+        float nan            = Float.NaN;
+        float zero_div_zero  = 0.0f / 0.0f;
+        float sqrt_negative  = (float)Math.sqrt(-1.0);
+        float log_negative   = (float)Math.log(-1.0);
+        float inf_minus_inf  = Float.POSITIVE_INFINITY - Float.POSITIVE_INFINITY;
+        float inf_times_zero = Float.POSITIVE_INFINITY * 0.0f;
+        float quiet_nan1     = Float.intBitsToFloat(0x7fc00001);
+        float quiet_nan2     = Float.intBitsToFloat(0x7fc00002);
         float signaling_nan1 = Float.intBitsToFloat(0x7fa00001);
         float signaling_nan2 = Float.intBitsToFloat(0x7fa00002);
-        float nan_minus = -nan;
+        float nan_minus      = -nan;
+
+        // Generate some infinities.
+        float positive_inf   = Float.POSITIVE_INFINITY;
+        float negative_inf   = Float.NEGATIVE_INFINITY;
+        float one_div_zero   = 1.0f / 0.0f;
+        float log_zero       = (float)Math.log(0.0);
 
         // Double check that they are actually NaNs.
-        assert Float.isNaN(nan);
-        assert Float.isNaN(zero_div);
-        assert Float.isNaN(sqrt);
-        assert Float.isNaN(inf_minus);
-        assert Float.isNaN(inf_times);
-        assert Float.isNaN(quiet_nan1);
-        assert Float.isNaN(quiet_nan2);
-        assert Float.isNaN(signaling_nan1);
-        assert Float.isNaN(signaling_nan2);
-        assert Float.isNaN(nan_minus);
+        assert  Float.isNaN(nan);
+        assert  Float.isNaN(zero_div_zero);
+        assert  Float.isNaN(sqrt_negative);
+        assert  Float.isNaN(inf_minus_inf);
+        assert  Float.isNaN(inf_times_zero);
+        assert  Float.isNaN(quiet_nan1);
+        assert  Float.isNaN(quiet_nan2);
+        assert  Float.isNaN(signaling_nan1);
+        assert  Float.isNaN(signaling_nan2);
+        assert  Float.isNaN(nan_minus);
+        assert  Float.isNaN(log_negative);
+
+        // Double check that they are infinities.
+        assert  Float.isInfinite(positive_inf);
+        assert  Float.isInfinite(negative_inf);
+        assert !Float.isNaN(positive_inf);
+        assert !Float.isNaN(negative_inf);
+        assert one_div_zero == positive_inf;
+        assert log_zero == negative_inf;
+
+        // Double check infinities.
 
         // See what they look like.
-        System.out.printf("nan            %f 0x%x\n", nan,            Float.floatToRawIntBits(nan));
-        System.out.printf("zero_div       %f 0x%x\n", zero_div,       Float.floatToRawIntBits(zero_div));
-        System.out.printf("sqrt           %f 0x%x\n", sqrt,           Float.floatToRawIntBits(sqrt));
-        System.out.printf("inf_minus      %f 0x%x\n", inf_minus,      Float.floatToRawIntBits(inf_minus));
-        System.out.printf("inf_times      %f 0x%x\n", inf_times,      Float.floatToRawIntBits(inf_times));
-        System.out.printf("quiet_nan1     %f 0x%x\n", quiet_nan1,     Float.floatToRawIntBits(quiet_nan1));
-        System.out.printf("quiet_nan2     %f 0x%x\n", quiet_nan2,     Float.floatToRawIntBits(quiet_nan2));
-        System.out.printf("signaling_nan1 %f 0x%x\n", signaling_nan1, Float.floatToRawIntBits(signaling_nan1));
-        System.out.printf("signaling_nan2 %f 0x%x\n", signaling_nan2, Float.floatToRawIntBits(signaling_nan2));
-        System.out.printf("nan_minus      %f 0x%x\n", nan_minus,      Float.floatToRawIntBits(nan_minus));
+        System.out.printf("nan            0x%08x %f\n", Float.floatToRawIntBits(nan           ), nan           );
+        System.out.printf("zero_div_zero  0x%08x %f\n", Float.floatToRawIntBits(zero_div_zero ), zero_div_zero );
+        System.out.printf("sqrt_negative  0x%08x %f\n", Float.floatToRawIntBits(sqrt_negative ), sqrt_negative );
+        System.out.printf("log_negative   0x%08x %f\n", Float.floatToRawIntBits(log_negative  ), log_negative  );
+        System.out.printf("inf_minus_inf  0x%08x %f\n", Float.floatToRawIntBits(inf_minus_inf ), inf_minus_inf );
+        System.out.printf("inf_times_zero 0x%08x %f\n", Float.floatToRawIntBits(inf_times_zero), inf_times_zero);
+        System.out.printf("quiet_nan1     0x%08x %f\n", Float.floatToRawIntBits(quiet_nan1    ), quiet_nan1    );
+        System.out.printf("quiet_nan2     0x%08x %f\n", Float.floatToRawIntBits(quiet_nan2    ), quiet_nan2    );
+        System.out.printf("signaling_nan1 0x%08x %f\n", Float.floatToRawIntBits(signaling_nan1), signaling_nan1);
+        System.out.printf("signaling_nan2 0x%08x %f\n", Float.floatToRawIntBits(signaling_nan2), signaling_nan2);
+        System.out.printf("nan_minus      0x%08x %f\n", Float.floatToRawIntBits(nan_minus     ), nan_minus     );
+        System.out.printf("positive_inf   0x%08x %f\n", Float.floatToRawIntBits(positive_inf  ), positive_inf  );
+        System.out.printf("negative_inf   0x%08x %f\n", Float.floatToRawIntBits(negative_inf  ), negative_inf  );
+        System.out.printf("one_div_zero   0x%08x %f\n", Float.floatToRawIntBits(one_div_zero  ), one_div_zero  );
+        System.out.printf("log_zero       0x%08x %f\n", Float.floatToRawIntBits(log_zero      ), log_zero      );
 
         // NaN comparisons always fail.
         // Therefore, all tests that we will do afterwards will be just isNaN.
